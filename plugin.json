@@ -1,0 +1,38 @@
+{
+  "name": "myworkflow",
+  "version": "2.1.0",
+  "description": "MyWorkflow — v2 六组 skills / 五分类运行时路由。提供完整的 AI 辅助开发工作流：代码编写、Bug修复、需求澄清、深度调研、文稿撰写、任务拆解派发、反谄媚行为准则。",
+  "author": "Lenovo",
+  "license": "MIT",
+  "hooks": {
+    "config": "hooks/hooks.json"
+  },
+  "skills": [
+    "skills/任务分类入口",
+    "skills/智能体闭环开发",
+    "skills/Bug修复与验证",
+    "skills/大项目初始化",
+    "skills/大项目工作维护",
+    "skills/根因定位与全面排查",
+    "skills/Github协作",
+    "skills/humanizer-zh",
+    "skills/深度调研",
+    "skills/辅助写技能",
+    "skills/需求澄清",
+    "skills/任务拆解与派发",
+    "skills/子智能体执行协议",
+    "skills/集成验证与修正",
+    "skills/轻量级派发",
+    "skills/反谄媚"
+  ],
+  "keywords": [
+    "workflow",
+    "development",
+    "bug-fix",
+    "code-review",
+    "task-orchestration",
+    "chinese",
+    "deep-research",
+    "skill-authoring"
+  ]
+}

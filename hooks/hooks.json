@@ -1,0 +1,28 @@
+{
+  "_comment": "v2 设计决策：仅使用 SessionStart Hook。v1 的 UserPromptSubmit 关键词分类已被 LLM 语义分类替代。",
+  "description": "MyWorkflow — v2 六组 skills / 五分类运行时路由。SessionStart 时注入分类指令 + skill 清单",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\"",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\" --reset",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
