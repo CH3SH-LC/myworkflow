@@ -1,8 +1,17 @@
 # MyWorkflow — 开发进度速查
 
-> 最后更新：2026-07-13
+> 最后更新：2026-07-15
 
 ---
+
+## 2026-07-15
+
+- [Fix] 技能触发稳定性全量修复（P0-1~P2-2），4 子智能体并行执行
+  - Agent A: 插件格式迁移 → `.claude-plugin/plugin.json` 标准格式
+  - Agent B: 新增 `UserPromptSubmit` Hook 做关键词硬路由
+  - Agent C: `session-init.sh` 增强——触发词提取 + 注意力锚点 + 周期性自检 + compact 重注入
+  - Agent D: `session-init.sh` 加固——SUBAGENT-STOP 三层检测 + Windows 路径验证 + 大小写兼容 + 输出验证
+- [Verify] 全量集成验证通过：bash 语法 ✅ | 关键词匹配 ✅ | 触发词提取 ✅ | reset 模式 ✅
 
 ## 2026-07-13
 

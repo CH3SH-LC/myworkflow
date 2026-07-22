@@ -1,7 +1,68 @@
 # MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-07-13（第九阶段：插件整理 + GitHub 发布准备）
+> 最后更新：2026-07-15（第十阶段：技能触发稳定性全量修复）
+
+---
+
+## 2026-07-15
+
+### [Fix] 技能触发稳定性全量修复 — 根因分析 + 6 项修复并行执行
+
+问题描述 / 变更原因：
+用户反馈 skills 不能被稳定触发。经调研发现 7 项根因（详见分析报告），
+除 DeepSeek 模型本身无法修正外，其余 6 项全部通过 4 子智能体并行修复。
+
+根因分析摘要（详见对话分析）：
+- P0-1: 插件使用 root `plugin.json` 而非标准 `.claude-plugin/plugin.json`，运行时发现不稳定
+- P0-2: 插件未注册到 `installed_plugins.json`
+- P0-3: 纯 prompt 触发无硬 enforcement——v2 删除 UserPromptSubmit 后完全依赖 LLM 自愿
+- P1-1: SessionStart 注入在长对话/compact 后被稀释
+- P1-2: Skill description 只有 200 字符，缺少触发关键词
+- P1-3: 多 SessionStart Hook 竞争
+- P2-1: SUBAGENT-STOP 标签对 DeepSeek 子智能体不可靠
+
+修改文件（4 子智能体并行执行）：
+
+Agent A — 插件格式修复：
+- Add: `.claude-plugin/plugin.json` — 标准运行时发现格式（仅元数据：name/version/description/author）
+- Modify: `plugin.json` — 添加 `_comment` 字段说明分工（此文件用于 marketplace 发布，运行时发现由 .claude-plugin/ 负责）
+- 理由：`.claude-plugin/plugin.json` 是 Claude Code 本地插件发现的标准路径，root `plugin.json` 可能不被稳定识别
+
+Agent B — UserPromptSubmit 硬路由：
+- Add: `hooks/user-prompt-submit.sh` — 极简关键词匹配脚本（57 行，<2s）
+  - 三层优先级匹配：代码编写 > 文稿撰写 > 深度调研
+  - 命中时注入单行提醒："⚠️ [硬路由] 检测到[代码编写]类任务 → 必须先调用 Skill("任务分类入口")"
+  - 未命中时输出空 additionalContext（零噪音）
+  - 共 ~40 个关键词覆盖三类任务
+- Modify: `hooks/hooks.json` — 新增 `UserPromptSubmit` 事件配置，timeout: 5s
+- 理由：补上 v2 删除 UserPromptSubmit 后的硬 enforcement 缺口——每次用户消息都做关键词检测，命中即强提醒 LLM 调 Skill
+
+Agent C — session-init.sh 注入增强：
+- Add: `extract_triggers()` 函数（40 行）— 从 SKILL.md 提取显式"触发词："字段，降级方案从 description 提取引号内容
+- Add: `short_desc()` 函数 — 精简 description 到 80 字符
+- Add: 注意力锚点（5 行 ASCII 横幅）—— "⚠️ WORKFLOW ACTIVE" 不可错过
+- Add: 周期性自检指令 —— 每 5 条消息后在回复末尾附加 `🤖 工作流自检：[✅/⚠️]`
+- Add: `--reset` 模式增强 —— compact/clear 后强提醒 "上下文已重置，必须重新遵守工作流"
+- Modify: Skill 清单格式从 `[内置] name | desc` 升级为 `[内置] name | 🎯触发: kw1, kw2 | desc: ...`
+- 效果：16 个内置 skill 中 12 个成功提取了触发词（如 Bug修复与验证: "bug, 修 bug, 报错..."）
+
+Agent D — session-init.sh 健壮性加固：
+- Add: 子智能体 bash 层环境变量检测（CLAUDE_AGENT_TASK_ID/AGENT_MODE/SUBAGENT）→ 输出空 injection
+- Add: Windows 路径静默验证（CLAUDE_PLUGIN_ROOT/skills 存在性检查）
+- Add: SKILL.md/skill.md 大小写兼容 glob + 去重
+- Add: 输出验证（INJECTION 非空 + skill 数量 ≥5 检查，stderr 告警）
+- Modify: SUBAGENT-STOP 标签强化 + 角色检测提示（三层纵深防御）
+
+验证：
+- bash -n 语法检查：session-init.sh ✅ | user-prompt-submit.sh ✅
+- 功能测试：
+  - "帮我写代码加个登录功能" → 正确分类为[代码编写] ✅
+  - "今天天气怎么样" → 输出空 additionalContext（零噪音）✅
+  - --reset 模式 → "🔄 上下文已重置" 提醒正确注入 ✅
+  - 触发词提取 → 12/16 内置 skill 成功提取（4 个无显式标记的降级用 description）✅
+  - 专项 skills 扫描 → webnovel-studio 9 个 skill 正确列出 ✅
+- 注入长度：~8.3KB（合理，SessionStart 单次注入 + 1M 上下文窗口完全可接受）
 
 ---
 

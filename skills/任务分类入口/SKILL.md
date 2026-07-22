@@ -72,7 +72,7 @@ allowed-tools:
 
 ### 步骤 2：细化需求
 
-> 注：步骤 2 执行内联轻量澄清；复杂需求时升级调用 Skill('需求澄清')。
+> 注：步骤 2 执行内联轻量澄清；复杂需求时升级调用 Skill('myworkflow:需求澄清')。
 >
 > **适用于分类 1-4。分类 5（其它任务）跳过此步骤。**
 
@@ -101,13 +101,13 @@ allowed-tools:
 ```
 先判断：是否为新项目？
   ├─ 是（文件夹为空 / 无 CLAUDE.md / 无任何包管理配置文件（package.json、pyproject.toml、go.mod、Cargo.toml、Gemfile 等））
-  │   → Skill("大项目初始化")
+  │   → Skill("myworkflow:大项目初始化")
   │   → 初始化完成后，回到本流程继续
   └─ 否 → 判断子类型：
-      ├─ 功能开发/重构/加功能 → Skill("智能体闭环开发")
-      ├─ 修 bug/报错/异常/不工作 → Skill("Bug修复与验证")
-      ├─ 排查根因/深度排查 → Skill("根因定位与全面排查")
-      └─ 提交代码/创建 PR/合并 → Skill("Github协作")
+      ├─ 功能开发/重构/加功能 → Skill("myworkflow:智能体闭环开发")
+      ├─ 修 bug/报错/异常/不工作 → Skill("myworkflow:Bug修复与验证")
+      ├─ 排查根因/深度排查 → Skill("myworkflow:根因定位与全面排查")
+      └─ 提交代码/创建 PR/合并 → Skill("myworkflow:Github协作")
 ```
 
 **关键**：新项目必须先初始化四文件体系，再进入开发闭环。
@@ -116,7 +116,7 @@ allowed-tools:
 
 ```
 判断用户需求：
-  ├─ 已有文本需去 AI 味/润色 → Skill("humanizer-zh")
+  ├─ 已有文本需去 AI 味/润色 → Skill("myworkflow:humanizer-zh")
   ├─ 需要从零撰写内容 → 先直接撰写初稿，再询问是否需要 humanizer-zh 润色
   └─ 纯翻译 → 直接翻译，再询问是否需要 humanizer-zh 润色
 ```
@@ -124,18 +124,18 @@ allowed-tools:
 #### 3.3 深度调研
 
 ```
-→ Skill("深度调研")
+→ Skill("myworkflow:深度调研")
 ```
 
 传入步骤 2 确认的调研问题和范围。
 
-> ⚠️ 如果「深度调研」skill 不可用，手动执行：多源搜索 → 交叉验证 → 综合报告。
+> ⚠️ 如果「myworkflow:深度调研」skill 不可用，手动执行：多源搜索 → 交叉验证 → 综合报告。
 
 #### 3.4 专项工作
 
 ```
 先扫描：上下文中的「专项 Skills」清单，找匹配的专用 skill
-  ├─ 有匹配 → 调用对应的 Skill("xxx")
+  ├─ 有匹配 → 调用对应的 Skill("myworkflow:xxx")
   └─ 无匹配 → 降级为「需求澄清 → 直接执行」
 ```
 

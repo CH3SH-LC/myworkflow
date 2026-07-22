@@ -17,16 +17,16 @@ allowed-tools:
 
 ### 显式触发（用户/主智能体主动要求）
 - 用户说"验证集成""检查接口""集成检查""验证子任务""检查模块接口"
-- 主智能体在「任务拆解与派发」派发完成后，检测到所有子智能体 completion.md 就绪
+- 主智能体在「myworkflow:任务拆解与派发」派发完成后，检测到所有子智能体 completion.md 就绪
 
 ### 隐式触发（自动判断，满足任意一条时触发）
 1. **整批触发**：`.task-manifest/task-contract.yaml` 中列出的**所有** task-id 的 `completion.md` 均已生成
 2. **批次触发**：某一并行批次（如同一 `depends_on` 层级）的**全部** task-id 的 `completion.md` 均已生成 → 可先验证该批次，不等全部完成
-3. **超时触发**：自「任务拆解与派发」派发后超过 **30 分钟**仍有子智能体未提交 completion.md → 触发本 skill 的缺失处理流程（见前置强制步骤中的崩溃恢复）
+3. **超时触发**：自「myworkflow:任务拆解与派发」派发后超过 **30 分钟**仍有子智能体未提交 completion.md → 触发本 skill 的缺失处理流程（见前置强制步骤中的崩溃恢复）
 
 ### 不触发（反例）
 - 子智能体仍在运行中（completion.md 未全部生成且未超时）→ 等待，不要提前触发
-- task-contract.yaml 不存在 → 说明「任务拆解与派发」未完成拆解，先完成拆解
+- task-contract.yaml 不存在 → 说明「myworkflow:任务拆解与派发」未完成拆解，先完成拆解
 - 用户只是想看某个子智能体的产出（不是验证）→ 直接读文件，不需要走完整验证流程
 - 只有 1 个子任务 → 不需要本 skill，主智能体直接检查即可
 
@@ -37,8 +37,8 @@ allowed-tools:
 
 ## 必需要素
 
-- `.task-manifest/task-contract.yaml` 存在且完整（「任务拆解与派发」产出）
-- 所有子智能体的 interface-declaration.md 和 self-check.md 已生成（「子智能体执行协议」产出）
+- `.task-manifest/task-contract.yaml` 存在且完整（「myworkflow:任务拆解与派发」产出）
+- 所有子智能体的 interface-declaration.md 和 self-check.md 已生成（「myworkflow:子智能体执行协议」产出）
 - 至少一个子智能体的 completion.md 已提交，或自派发起已超 30 分钟
 
 ## 推荐要素
@@ -52,7 +52,7 @@ allowed-tools:
 
 1. **读取合约**：读取 `.task-manifest/task-contract.yaml`，加载所有任务的接口定义。
    - **如果合约文件不存在**：区分两种场景——
-     - `.task-manifest/` 目录也不存在 → "合约从未创建"，提示用户先运行「任务拆解与派发」拆解任务
+     - `.task-manifest/` 目录也不存在 → "合约从未创建"，提示用户先运行「myworkflow:任务拆解与派发」拆解任务
      - `.task-manifest/` 目录存在但 task-contract.yaml 缺失 → "合约被删除"，尝试恢复：检查 git 历史（`git log -- .task-manifest/task-contract.yaml`）或询问用户是否重新拆解
 2. **收集元文件**：对每个 task-id，检查 `.task-manifest/outputs/{task-id}/interface-declaration.md`、`self-check.md`、`completion.md` 是否存在且非空。缺失或为空→标记为"未完成"或"子智能体可能崩溃"（见下方处理）
 3. **确认依赖已满足**：对每个子任务，检查其 depends_on 中列出的任务是否已完成，**同时验证引用的 task-id 在合约中确实存在**。依赖未满足→标记"依赖未就绪"；task-id 不存在→标记"合约引用错误"
@@ -73,8 +73,8 @@ allowed-tools:
 
 | 方向 | 关联对象 | 关系 |
 |------|---------|------|
-| 输入 ← | 任务拆解与派发 | 读取「任务拆解与派发」产出的 task-contract.yaml 作为验证基准 |
-| 输入 ← | 子智能体执行协议 | 读取「子智能体执行协议」产出的 `.task-manifest/outputs/{task-id}/interface-declaration.md` 和 `self-check.md` 作为验证对象 |
+| 输入 ← | 任务拆解与派发 | 读取「myworkflow:任务拆解与派发」产出的 task-contract.yaml 作为验证基准 |
+| 输入 ← | 子智能体执行协议 | 读取「myworkflow:子智能体执行协议」产出的 `.task-manifest/outputs/{task-id}/interface-declaration.md` 和 `self-check.md` 作为验证对象 |
 
 ---
 
@@ -265,7 +265,7 @@ allowed-tools:
 - [{检查X}] 期望: {expected}，实际: {actual}，位置: {file:line}
 请修正实现使接口与合约一致。
 如果你认为合约定义本身有误（而非你的实现问题），请在修正报告中标注 [合约异议] 并说明原因——不要默默按错误合约实现。
-修正后重新执行「子智能体执行协议」的阶段 1-5（阶段 1 读取合约了解完整上下文；如果未修改接口声明可跳过阶段 2），
+修正后重新执行「myworkflow:子智能体执行协议」的阶段 1-5（阶段 1 读取合约了解完整上下文；如果未修改接口声明可跳过阶段 2），
 如果未修改接口声明，可跳过阶段 2。
 ```
 
@@ -280,7 +280,7 @@ allowed-tools:
 - ⚠️ 子智能体标注了 [合约异议] → 暂停修正循环，审视合约。如果合约确实有误 → 修复合约 → 重新派发所有受影响任务。如果合约无误 → 继续修正
 - ❌ 仍有不合规→轮次+1
 - ❌ 第 3 轮后仍不通过→标记 REQUIRES_MANUAL_INTERVENTION，建议审视合约
-- ❌ 如果 >50% 任务标记 REQUIRES_MANUAL_INTERVENTION → 建议重新审视整个合约——可能是拆解粒度或接口定义存在系统性问题，考虑重新运行「任务拆解与派发」
+- ❌ 如果 >50% 任务标记 REQUIRES_MANUAL_INTERVENTION → 建议重新审视整个合约——可能是拆解粒度或接口定义存在系统性问题，考虑重新运行「myworkflow:任务拆解与派发」
 
 ### 生成验证报告
 

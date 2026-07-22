@@ -271,7 +271,7 @@ gh pr view <PR-NUMBER>       # 查看 PR 描述和评论
 
 #### 作为被审查者（Receiving Review）
 
-> 遵循「反谄媚」skill 的原则——不盲目接受，验证后再改。
+> 遵循「myworkflow:反谄媚」skill 的原则——不盲目接受，验证后再改。
 
 **步骤 1：读取反馈**
 

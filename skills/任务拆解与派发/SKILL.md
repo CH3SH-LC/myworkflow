@@ -272,7 +272,7 @@ tasks:
 
 ### 第五步：生成子任务 prompt 模板
 
-为每个子任务生成 `.task-manifest/prompts/task-{id}.md`。模板包含：任务描述、依赖关系、输入文件表、输出接口表、验证标准、工作协议（引用「子智能体执行协议」的 5 阶段）、约束。
+为每个子任务生成 `.task-manifest/prompts/task-{id}.md`。模板包含：任务描述、依赖关系、输入文件表、输出接口表、验证标准、工作协议（引用「myworkflow:子智能体执行协议」的 5 阶段）、约束。
 
 使用 build-shared-types 作为完整 prompt 示例：
 
@@ -310,7 +310,7 @@ tasks:
 
 ## 工作协议
 
-请遵循「子智能体执行协议」的 5 阶段工作规范：
+请遵循「myworkflow:子智能体执行协议」的 5 阶段工作规范：
 1. **读取合约 + 确认输入**：读取 `.task-manifest/task-contract.yaml` 中你的条目和所有输入文件，确保充分理解
 2. **声明接口**：先写 `.task-manifest/outputs/{task-id}/interface-declaration.md` 承诺你的接口——声明先于实现
 3. **产出实现**：按声明逐项编码，每完成一个文件在声明中勾选
@@ -344,13 +344,13 @@ tasks:
 用户批准后按拓扑顺序派发。每个子智能体的 Agent prompt **必须**包含以下精确引用（直接复制，替换 {task-id}）：
 
 ```
-你必须遵循「子智能体执行协议」。你的 task-id 是 {task-id}。
+你必须遵循「myworkflow:子智能体执行协议」。你的 task-id 是 {task-id}。
 先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，
 再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，
 然后严格按 5 阶段协议工作：阶段 1：读取合约+确认输入。先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，逐一读取 inputs 中的文件路径。阶段 2-5 声明接口→产出实现→自检→完成报告。
 ```
 
-不可省略或改写此引用模板——它确保子智能体正确触发「子智能体执行协议」。
+不可省略或改写此引用模板——它确保子智能体正确触发「myworkflow:子智能体执行协议」。
 
 **派发失败降级**：单次 Agent 调用失败 → 重试 1 次（间隔 5 秒）；仍失败 → 该任务降级为串行由主智能体直接执行；主智能体也无法执行 → 报告用户并列出未派发任务列表。
 
@@ -362,7 +362,7 @@ tasks:
 2. 确认用户已审批
 3. 确认所有 prompt 模板已生成
 4. 派发第 0 批子智能体
-5. 监控所有子智能体的 completion.md：全部就绪后触发「集成验证与修正」；若派发后超 30 分钟仍有缺失则同样触发（集成验证会处理缺失场景）
+5. 监控所有子智能体的 completion.md：全部就绪后触发「myworkflow:集成验证与修正」；若派发后超 30 分钟仍有缺失则同样触发（集成验证会处理缺失场景）
 6. 收到子智能体的依赖超时报告后，立即检查依赖任务状态。如依赖方崩溃，不等 30 分钟立即触发集成验证与修正。
 
 ---
@@ -398,7 +398,7 @@ tasks:
 - 某个子任务的 inputs 为空且 depends_on 非空 → 依赖关系可能不真实
 - 用户说"你定就行"但不审批 → 核心拆解方案不能由 AI 拍板
 - 合约中出现通配符路径 → 接口不可验证
-- **`.task-manifest/task-contract.yaml` 被意外删除** → 所有子智能体和「集成验证与修正」无法工作。恢复路径：（1）检查 git 历史 `git log -- .task-manifest/task-contract.yaml`（2）如果 git 中有→`git checkout` 恢复（3）如果没有→必须重新走本 skill 的第三步生成合约。子智能体的实际代码产出不受影响，新合约可以直接引用已有文件路径
+- **`.task-manifest/task-contract.yaml` 被意外删除** → 所有子智能体和「myworkflow:集成验证与修正」无法工作。恢复路径：（1）检查 git 历史 `git log -- .task-manifest/task-contract.yaml`（2）如果 git 中有→`git checkout` 恢复（3）如果没有→必须重新走本 skill 的第三步生成合约。子智能体的实际代码产出不受影响，新合约可以直接引用已有文件路径
 
 ---
 
