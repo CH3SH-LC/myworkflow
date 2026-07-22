@@ -1,7 +1,212 @@
 # MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-07-15（第十阶段：技能触发稳定性全量修复）
+> 最后更新：2026-07-22（第十四阶段：session-init.sh 启动性能优化）
+
+---
+
+## 2026-07-22（第四次）
+
+### [Refactor] 内部 skill 交叉引用迁移至 myworkflow: 插件前缀
+
+问题描述：
+插件驱动的 skills 系统要求跨 skill 引用使用 `myworkflow:` 前缀（如 `Skill("myworkflow:智能体闭环开发")`），
+但原有 15 个非写作 skill 文件中的 `Skill()` 调用和 `「」` 文本引用仍使用旧的直接名称（如 `Skill("智能体闭环开发")`）。
+
+变更范围：
+- **`Skill()` 函数调用**：任务分类入口（9 处）+ Bug修复与验证（1 处），共 10 处
+- **`「」` 文本交叉引用**：100+ 处，覆盖全部 15 个非写作 skill 文件
+- 写作相关 skills（写前审查/具体写作/章节审查/大纲设计/人物设计/整体架构/明确设定/全书一致性审查/本书个性化设计）已同步更新但暂未推送
+
+执行方式：5 个并行子智能体分批次处理，每批次 4-5 个文件。
+变更仅限 `Skill()` 调用的 skill 名参数和 `「技能名」` 中文引号内文本，前端元数据（YAML frontmatter）和外部 skill 引用（dataviz/skill-creator 等）未修改。
+
+仓库推送：已创建 GitHub 仓库 https://github.com/CH3SH-LC/myworkflow 并推送至 master 分支。
+
+---
+
+## 2026-07-22（第三次）
+
+### [Perf] session-init.sh 启动性能优化 — 斜杠命令启动卡顿修复
+
+问题描述：
+用户报告每次新开 Claude Code 窗口后，斜杠命令需要卡 27 秒才能响应。
+输入 / 后菜单正常显示，但回车执行后命令直接消失无反应。分析发现根本原因是
+SessionStart hook 的 `session-init.sh` 脚本执行耗时 26.5s，在此期间 CLI 无法处理任何命令。
+
+根因分析：
+1. **子进程爆炸**：每次 SessionStart 扫描 100 个 SKILL.md 文件（总计 649KB），
+   每个文件触发 ~10 次子进程（grep/sed/head/tr/cut），总计 1000+ 子进程创建。
+   在 Windows Git Bash 上每个子进程开销 50-200ms，累积达 27s。
+2. **无必要全文件读取**：`extract_triggers()` 用 `cat "$skill_file"` 读取整个文件
+   （最大 82KB），但实际上 `description:` 和 `触发词：` 始终在第 3 行 frontmatter。
+3. **无缓存**：每次新窗口都重新扫描全部文件，即使 skill 内容从未改变。
+
+修复方案：
+- 修复 1：`cat "$skill_file"` → `head -30 "$skill_file"`（只读头部 30 行）
+- 修复 2（核心）：**文件级缓存机制**
+  - 首次扫描后将生成的 JSON 注入文本缓存到 `.cache/injection.txt`
+  - 后续启动用 `find ... -newer` 检查所有 SKILL.md 的 mtime
+  - 缓存有效时直接输出（~0.25s），无效时重建并更新缓存
+  - `clear`/`compact` 的 reset 模式有独立缓存文件 `injection_reset.txt`
+
+效果：
+| 指标 | 修复前 | 修复后 |
+|------|--------|--------|
+| 冷启动（缓存未命中）| 27s | 27s（不变，但仅首次） |
+| 热启动（缓存命中）| 27s | **0.25s（108× 加速）** |
+
+涉及文件：
+- `hooks/session-init.sh` — 修改 2 处（head-30 + 缓存逻辑）
+
+### [Diagnosis] 配置文件膨胀分析
+
+`.claude.json`（166KB/4379 行）：
+- projects 段占 77%（108KB），64 个项目含 19 个僵尸（无数据空壳）
+- 每个活跃项目存储 20+ 行 `lastSessionMetrics`（帧耗时 p50/p95/p99、hook 耗时等）
+- 主要空间占用来自 `lastModelUsage`（per-model token/cost 明细）
+
+`history.jsonl`（657KB/2450 条）：
+- CLI 输入历史，纯累积无自动清理
+- 每条包含 display/timestamp/project/sessionId
+
+（待后续清理）
+
+---
+
+## 2026-07-22（第二次）
+
+### [Fix] skills/ 目录联结丢失修复 — @local 插件完全不被发现
+
+问题描述 / 变更原因：
+07-22 第一次修复将 marketplace 改为 `@local` 后，三个插件依然不被 Claude Code 加载。
+通过深入对比分析发现：所有官方插件（code-simplifier、skill-creator 等）都有 `.in_use/<PID>`
+标记，而三个 `@local` 插件完全没有 `.in_use` 目录——证实它们从未被 Claude Code 进程加载。
+
+根因分析：
+1. **目录联结丢失**：07-20 创建的 `~/.claude/skills/myworkflow` 目录联结全部消失，
+   `~/.claude/skills/` 变为空目录。这是直接原因。
+2. **Claude Code 发现路径**（再次验证）：
+   - ✅ `~/.claude/skills/<name>/` — 自动扫描（skills-directory 模式）
+   - ✅ `plugins/cache/<marketplace>/<name>/<ver>/` — marketplace 安装
+   - ❌ `~/.claude/plugins/<name>/` — 直接放置的目录不在任何发现路径中
+3. **深层对比**：通过 hexdump、JSON 解析对比了所有官方 `.claude-plugin/plugin.json`
+   与用户插件的差异，确认结构完全一致（仅 `name`/`version`/`description`/`author`），
+   排除格式问题。
+4. **官方文档印证**：Context7 查询 `llmstxt/code_claude_llms_txt` 确认：
+   - `--plugin-dir` flag 仅用于临时测试（单 session）
+   - 永久安装需通过 marketplace 注册或 `~/.claude/skills/` 扫描
+   - `/reload-plugins` 可免重启应用更改
+
+修复方案：
+重新创建三条 Windows 目录联结（Junction）：
+```
+~/.claude/skills/myworkflow          → ~/.claude/plugins/myworkflow        ✅
+~/.claude/skills/webnovel-studio     → ~/.claude/plugins/webnovel-studio   ✅
+~/.claude/skills/large-project-work  → ~/.claude/plugins/large-project-work ✅
+```
+- 零空间占用（仅 reparse point）
+- 文件物理位置不变（仍在 `plugins/<name>/`）
+- Claude Code 通过扫描 `~/.claude/skills/` 自动发现全部三个插件
+
+对比验证：
+- code-simplifier@claude-plugins-official → `.in_use/2452` + `.in_use/25684` ✅ 已加载
+- skill-creator@claude-plugins-official → `.in_use/2452` + `.in_use/25684` ✅ 已加载
+- myworkflow@local → 修复前无 `.in_use` ❌ → 修复后（待重启验证）
+- webnovel-studio@local → 修复前无 `.in_use` ❌ → 修复后（待重启验证）
+- large-project-work@local → 修复前无 `.in_use` ❌ → 修复后（待重启验证）
+
+注意事项：
+- 必须重启 Claude Code 新 session 才能生效
+- 联结可能在系统清理/更新时丢失，需建立自动检查机制
+- 考虑在 session-init.sh 开头增加联结存在性检查，缺失时自动创建
+
+---
+
+## 2026-07-22（第一次）
+
+### [Fix] 插件注册 marketplace 修复 — @external → @local
+
+问题描述 / 变更原因：
+尽管 07-20 通过目录联结解决了插件发现路径问题，但 `settings.json` 中
+`myworkflow` 和 `webnovel-studio` 仍然注册为 `@external` marketplace。
+`external` 市场不存在于任何 marketplace 配置中，导致 "Marketplace 'external' not found" 错误，
+插件依旧不能正常注册。
+
+同时，`large-project-work` 插件（`.claude-plugin/plugin.json` 已存在）完全未在
+`enabledPlugins` 中列出。
+
+根因分析：
+- Claude Code 的 marketplace 只有 `claude-plugins-official`（从 GitHub 同步）
+- `@external` 不是有效的 marketplace 标识符
+- 本地开发的插件应使用 `@local` 市场标识
+- `large-project-work` 在 07-20 的修复中被遗漏，未注册
+
+修复方案：
+修改 `~/.claude/settings.json` 的 `enabledPlugins`：
+- `myworkflow@external` → `myworkflow@local` ✅
+- `webnovel-studio@external` → `webnovel-studio@local` ✅
+- 新增 `large-project-work@local`: true ✅
+
+修改文件：
+- Modify: `~/.claude/settings.json` — 3 处 marketplace 修正
+
+验证结果：
+- 重启 Claude Code 后应能正常加载全部 3 个本地插件
+- `large-project-work` 的 skills 将通过 `~/.claude/skills/` 目录联结被发现
+- （待用户重启验证）
+
+注意事项：
+- 如果 `large-project-work` 也没有对应的 `~/.claude/skills/large-project-work` 目录联结，
+  需要参照 07-20 的方案创建联结
+- 三个插件的 skills 命名空间：`myworkflow:`, `webnovel-studio:`, `large-project-work:`
+
+---
+
+## 2026-07-20
+
+### [Fix] 插件发现路径修复 — P0-2 根本解决
+
+问题描述 / 变更原因：
+用户反馈 "这个 plugin 依旧不能正常注册 skills"。经 `claude plugin list` 验证，
+**myworkflow 完全不在已安装插件列表中**——所有 16 个 skills 和 2 个 hooks 都不被 Claude Code 发现。
+
+根因分析：
+Claude Code 的插件发现只有两条路径：
+1. `~/.claude/plugins/cache/<marketplace>/<name>/<ver>/` — 通过 `installed_plugins.json` 注册的 marketplace 插件
+2. `~/.claude/skills/<name>/` — skills-directory 插件（`claude plugin init` 创建），自动扫描
+
+`~/.claude/plugins/<name>/` 直接放置的目录**不在任何发现路径中**。
+这是 v2 早期设计遗留问题——当时误以为放在 `plugins/` 下就会自动加载。
+
+对比验证：
+- `task-orchestrator@skills-dir` ✅ 在 `~/.claude/skills/` → `claude plugin list` 可见
+- `skill-creator@claude-plugins-official` ✅ 在 `cache/.../` + `installed_plugins.json` → 可见
+- `myworkflow` ❌ 在 `~/.claude/plugins/myworkflow/` → 不可见
+
+修复方案：
+创建 Windows 目录联结（Junction）——零空间占用的目录指针：
+```
+~/.claude/skills/myworkflow/  ──→  ~/.claude/plugins/myworkflow/
+```
+- 文件物理位置不变（仍在 `plugins/myworkflow/`）
+- `skills/` 下仅有一个 reparse point，不复制任何文件
+- Claude Code 通过扫描 `~/.claude/skills/` 自动发现插件
+
+修改文件：
+- Create: `~/.claude/skills/myworkflow` → 目录联结（Junction）指向 `~/.claude/plugins/myworkflow`
+- No code changes needed（`.claude-plugin/plugin.json`、skills、hooks 结构本身正确）
+
+验证结果：
+- 重启 session 后，系统提示中出现全部 16 个 `myworkflow:` 前缀的 skills ✅
+- Skills 名字显示为 `myworkflow:skill-name` 格式（与 `skill-creator:skill-creator` 一致）✅
+- ⚠️ 中文 skill 名在系统提示中显示为连续的 `---` 短横线（显示层编码问题，不影响实际调用）
+
+注意事项：
+- 重启 Claude Code 新 session 后生效
+- 每新 session 都会自动触发 SessionStart hook 注入工作流指令
+- UserPromptSubmit hook 也会每轮消息触发
+- ⚠️ 待验证（2026-07-20）：插件 skills 以命名空间 `myworkflow:技能名` 注册，session-init.sh 注入的 Skill() 调用使用裸名（如 `Skill("任务分类入口")`）。部分技能在 `~/.claude/skills/` 下有直接副本（大项目初始化、智能体闭环开发、Bug修复与验证、大项目工作维护、根因定位与全面排查、humanizer-zh、深度调研）可走老路径；仅插件独有的技能（任务分类入口、Github协作、需求澄清、任务拆解与派发、辅助写技能、集成验证与修正、轻量级派发、子智能体执行协议、反谄媚）需验证裸名调用是否生效。如失败需将 session-init.sh 中所有 Skill("xxx") 改为 Skill("myworkflow:xxx")。
 
 ---
 

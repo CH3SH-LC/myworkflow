@@ -1,8 +1,58 @@
 # MyWorkflow — 开发进度速查
 
-> 最后更新：2026-07-15
+> 最后更新：2026-07-22
 
 ---
+
+## 2026-07-22（第四次）
+
+- [Refactor] **内部 skill 交叉引用迁移至 myworkflow: 前缀** —— 10 处 Skill() 调用 + 100+ 处文本引用，覆盖 15 个非写作 skill 文件，已推送至 GitHub
+
+## 2026-07-22（第三次）
+
+- [Perf] **session-init.sh 启动性能优化** —— 新窗口斜杠命令卡 27 秒 → 0.25 秒（108×）
+  - 根因：每次 SessionStart 扫描 100 个 SKILL.md 文件（649KB），Windows Git Bash 子进程创建开销 1000+ 次累计 27s
+  - 修复 1：`extract_triggers()` 中 `cat "$skill_file"` → `head -30`（触发词都在第 3 行 frontmatter，无需读全文）
+  - 修复 2：**缓存机制**——首次扫描后缓存到 `.cache/injection.txt`，后续启动仅检查 mtime，命中即直接输出
+  - 缓存自动失效：任意 SKILL.md 的 mtime 新于缓存文件时自动重建
+  - 涉及文件：`hooks/session-init.sh`
+- [Diagnosis] `.claude.json` 膨胀分析 —— 166KB/4379 行，projects 段占 77%（108KB），64 个项目含 19 僵尸+45 活跃（每项目存 20+ 行 lastSessionMetrics）
+- [Diagnosis] `history.jsonl` 膨胀分析 —— 657KB/2450 条，纯 CLI 输入历史积累
+
+## 2026-07-22（第二次）
+
+- [Fix] **skills/ 目录联结丢失修复** —— 三个 `@local` 插件仍然不被发现，`.in_use` 标记全部缺失
+  - 根因：07-20 创建的 `~/.claude/skills/` 目录联结全部丢失（`skills/` 变为空目录）
+  - 没有联结时 Claude Code 不扫描 `plugins/<name>/`，三个插件的 skills/hooks/agents 全部不可见
+  - 修复：重新创建三条目录联结（Junction）：
+    ```
+    ~/.claude/skills/myworkflow          → ~/.claude/plugins/myworkflow        ✅
+    ~/.claude/skills/webnovel-studio     → ~/.claude/plugins/webnovel-studio   ✅
+    ~/.claude/skills/large-project-work  → ~/.claude/plugins/large-project-work ✅
+    ```
+  - 深层对比验证：所有官方插件（code-simplifier/skill-creator/…）都在 `cache/` 下且都有 `.in_use/<PID>` 标记；用户的三个 `@local` 插件始终无 `.in_use`，证实从未被加载
+  - 官方文档印证：`llmstxt/code_claude_llms_txt` → 本地插件测试用 `--plugin-dir` flag；永久安装需通过 marketplace 注册或 `~/.claude/skills/` 扫描
+  - ⚠️ 仍须重启 Claude Code 新 session 才能生效
+
+## 2026-07-22（第一次）
+
+- [Fix] **插件注册 marketplace 修复** —— `@external` 市场不存在，改为 `@local`；新增 `large-project-work@local` 注册
+  - `myworkflow@external` → `myworkflow@local` ✅
+  - `webnovel-studio@external` → `webnovel-studio@local` ✅
+  - 新增 `large-project-work@local`: true ✅
+  - 修改文件：`~/.claude/settings.json` 的 `enabledPlugins`
+  - 根因：`external` 不是有效 marketplace，本地插件应使用 `@local`
+  - 注意：`large-project-work` 如无 `~/.claude/skills/` 目录联结需参照 07-20 方案补充
+
+## 2026-07-20
+
+- [Fix] **插件发现路径修复** —— Claude Code 不会扫描 `~/.claude/plugins/<name>/`，只识别 `~/.claude/skills/<name>/`（skills-directory）或 marketplace 注册的插件
+  - 根因：P0-2（未注册到 `installed_plugins.json`）之前被标记为已知但未实际解决
+  - 修复：创建目录联结 `~/.claude/skills/myworkflow` → `~/.claude/plugins/myworkflow`（零空间占用，文件保留原位）
+  - 修复前 `claude plugin list` 不显示 myworkflow，所有 skills/hooks 均不被发现
+  - 修复后 Claude Code 通过 `~/.claude/skills/` 扫描自动发现插件，skills 和 hooks 都会被加载
+  - 注意：需要重启 Claude Code 新 session 才能生效
+  - ⚠️ 待验证：插件 skills 以 `myworkflow:技能名` 命名空间注册，session-init.sh 中写的是裸名 `Skill("任务分类入口")`，可能需改为 `Skill("myworkflow:任务分类入口")`。部分技能（大项目初始化等）在 `~/.claude/skills/` 有直接副本可走老路径，但仅插件独有的技能（任务分类入口、Github协作、需求澄清、任务拆解与派发、辅助写技能、集成验证与修正、轻量级派发、子智能体执行协议、反谄媚）需验证裸名是否能正常调用
 
 ## 2026-07-15
 
