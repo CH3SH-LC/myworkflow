@@ -1,8 +1,25 @@
-# MyWorkflow — 开发进度速查
+﻿# MyWorkflow — 开发进度速查
 
-> 最后更新：2026-07-22
+> 最后更新：2026-07-27
 
 ---
+
+## 2026-07-27
+
+- **[Diagnosis] 触发链路全量自查** —— 用户要求验证 myworkflow 是否能正常触发
+  - 验证三层防线全部正常：SessionStart ✅ | UserPromptSubmit ✅ | PostToolUse ✅
+  - 26 个 skill 全部有 SKILL.md/skill.md，task-router → 下游路由 8 条链路无断裂
+  - 发现 4 个低严重度问题：(1) plugin.json skills 数组缺 9 个条目 (2) 具体写作/skill.md 含 UTF-8 BOM (3) skills/tools/ 非 skill 目录 (4) post-tool-use.sh flag 文件跨 session 共享
+  - 结论：触发链路畅通，能正常运行
+
+## 2026-07-26
+
+- **[Fix] Skill 触发可靠性四层加固** —— 解决 LLM 不主动调用 Skill() 和跨 skill 引用失败问题
+  - **F3**: 修复 `extract_triggers()` 和 `short_desc()` 中 `cut -c` 导致的 UTF-8 编码截断（��乱码），移除所有不安全的字节截断
+  - **F1**: 重写 session-init.sh 注入指令——所有 `Skill("name")` → `Skill("myworkflow:name")` + `🚨 必须使用 Skill 工具调用` 强制语言 + 响应前强制自检清单（3 问：是否调了 Skill？是否跳过澄清？是否真的用了工具？）
+  - **F2**: 新增 `PostToolUse` hook（`post-tool-use.sh`）——执行期兜底：路由 skill 加载后检测下游 Skill() 调用，≥3 次非 Skill 工具调用后注入提醒。注册到 hooks.json
+  - **F5**: 增强 `UserPromptSubmit` 关键词覆盖——扩展代码编写/文稿撰写/深度调研三类匹配模式，收缩单字模糊匹配，减少假阳性
+  - **未执行**: 联结重建（`~/.claude/skills/` → `plugins/` junctions）→ 记录到 memory，留待后续根因调查
 
 ## 2026-07-25
 
@@ -56,7 +73,7 @@
   - 修复前 `claude plugin list` 不显示 myworkflow，所有 skills/hooks 均不被发现
   - 修复后 Claude Code 通过 `~/.claude/skills/` 扫描自动发现插件，skills 和 hooks 都会被加载
   - 注意：需要重启 Claude Code 新 session 才能生效
-  - ⚠️ 待验证：插件 skills 以 `myworkflow:技能名` 命名空间注册，session-init.sh 中写的是裸名 `Skill("任务分类入口")`，可能需改为 `Skill("myworkflow:任务分类入口")`。部分技能（大项目初始化等）在 `~/.claude/skills/` 有直接副本可走老路径，但仅插件独有的技能（任务分类入口、Github协作、需求澄清、任务拆解与派发、辅助写技能、集成验证与修正、轻量级派发、子智能体执行协议、反谄媚）需验证裸名是否能正常调用
+  - ⚠️ 待验证：插件 skills 以 `myworkflow:技能名` 命名空间注册，session-init.sh 中写的是裸名 `Skill("任务分类入口")`，可能需改为 `Skill("myworkflow:task-router")`。部分技能（大项目初始化等）在 `~/.claude/skills/` 有直接副本可走老路径，但仅插件独有的技能（任务分类入口、Github协作、需求澄清、任务拆解与派发、辅助写技能、集成验证与修正、轻量级派发、子智能体执行协议、反谄媚）需验证裸名是否能正常调用
 
 ## 2026-07-15
 

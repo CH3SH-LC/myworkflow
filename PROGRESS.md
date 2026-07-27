@@ -1,7 +1,71 @@
-# MyWorkflow — 开发进度
+﻿# MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-07-22（第十四阶段：session-init.sh 启动性能优化）
+> 最后更新：2026-07-26（第十五阶段：Skill 触发可靠性四层加固）
+
+---
+
+## 2026-07-26
+
+### [Fix] Skill 触发可靠性四层加固
+
+问题描述：
+用户反馈"在工作过程中触发包内别的 skill 依旧困难"。经系统化诊断发现：
+- **RC1（主要）**：整个路由系统依赖 LLM 自愿调用 Skill()，但 LLM 训练倾向是"直接帮用户做事"而非"先走流程"。注入指令中 `Skill("name")` 读起来像文档超链接而非必须执行的工具调用
+- **RC2（次要）**：`~/.claude/skills/` 联结第三次丢失（07-20 → 07-22 → 07-26），虽 `@local` 注册在 `installed_plugins.json` 中正常，但缺少冗余发现路径
+- **RC3（助长）**：`extract_triggers()` 中 `cut -c` 在多字节 UTF-8 字符边界截断导致 `��` 编码损坏；注入用裸名（`Skill("智能体闭环开发")`）而 SKILL.md 交叉引用用前缀名（`Skill("myworkflow:agent-dev-loop")`），命名不一致增加 LLM 混淆
+
+修复内容（四层加固）：
+
+**F3: 修复编码损坏 + 统一 myworkflow: 前缀**
+- `extract_triggers()`：移除 `cut -c1-70`（触发词截断），避免 UTF-8 多字节字符被切断
+- `extract_triggers()` fallback：移除 `cut -c1-60`
+- `short_desc()`：移除 `cut -c1-80`
+- 所有截断改为依赖 `。` 自然分隔符，内容完整性优先于长度控制
+- 受影响行：67、80、94
+
+**F1: 重写注入指令——强制化 Skill() 调用**
+- 所有 `Skill("name")` → `Skill("myworkflow:name")`（统一前缀）
+- 路由指令从描述式改为强制式：`→ Skill("name")` → `→ 使用 Skill 工具调用 Skill("myworkflow:name")`
+- 新增 `🚨` 标记每个需要工具调用的路由分支
+- 新增 `🛑 响应前强制自检`（3 问清单）：是否调了 Skill 工具？是否跳过澄清？是否真的用了工具而非只读文本？
+- 新增核心原则第 5 条："Skill("myworkflow:name") 是工具函数，不是文档超链接"
+- SUBAGENT-STOP 中裸名同步更新
+- 涉及文件：`hooks/session-init.sh`（INJECTION 变量完整重写）
+
+**F2: 新增 PostToolUse hook——执行期兜底**
+- 新建 `hooks/post-tool-use.sh`（~70 行）
+- 机制：每次工具调用后检测
+  - 若 `tool_name == "Skill"` 且 skill 是路由入口（任务分类入口/需求澄清）→ 写入 pending flag
+  - 若后续 ≥3 次非 Skill 工具调用 → 注入提醒 + 清除 flag
+  - 若任何其他 Skill 调用 → 清除 flag（下游路由已完成）
+- 纯 grep 解析 JSON，零 Python 开销，典型耗时 < 0.1s
+- 注册到 `hooks/hooks.json`：新增 `PostToolUse` 事件，timeout: 3s
+- 涉及文件：`hooks/post-tool-use.sh`（新建）、`hooks/hooks.json`（修改）
+
+**F5: 增强 UserPromptSubmit 关键词覆盖**
+- 代码编写模式：扩充 ~50%（新增"帮我写/改/加/做""能不能改""可以加""优化""重写""解决.*问题""怎么修""如何改""改这个/那个""写个.*功能""改个""弄个"等），收缩单字"修"为多字组合（"修.bug""修一下""修复"）
+- 文稿撰写模式：扩充 ~40%（新增"润一下""写个文档/报告""帮我写.*文章""太像AI""去机器人味"）
+- 深度调研模式：收缩模糊匹配（"调查""调研"升级为多字组合），新增"帮我调研""调研一下""有什么方案""横向对比""方案对比"
+- 提醒消息中 Skill() 名称同步更新为 `myworkflow:` 前缀
+- 涉及文件：`hooks/user-prompt-submit.sh`
+
+**未执行（记录到 memory）**：联结重建 → `memory/junction-rebuild-deferred.md`
+
+变更文件：
+- Modify: `hooks/session-init.sh` — F1 + F3（注入重写 + 编码修复）
+- Modify: `hooks/user-prompt-submit.sh` — F5（关键词增强）
+- Add: `hooks/post-tool-use.sh` — F2（新建 PostToolUse hook）
+- Modify: `hooks/hooks.json` — F2（注册新 hook）
+- Modify: `PROGRESS-LITE.md`、`PROGRESS.md` — 本文档
+- Add: `memory/junction-rebuild-deferred.md` — 联结重建待办
+- Add: `memory/MEMORY.md` — 记忆索引
+
+验证：
+- bash -n 语法检查：session-init.sh ✅ | user-prompt-submit.sh ✅ | post-tool-use.sh ✅
+- hooks.json JSON 语法：✅（PowerShell ConvertFrom-Json 验证通过）
+- 旧缓存已清除：injection.txt + injection_reset.txt
+- ⚠️ 需重启 Claude Code 新 session 后验证：新注入指令是否有效提升 Skill() 调用率、PostToolUse hook 是否正常触发
 
 ---
 
@@ -30,7 +94,7 @@
 ### [Refactor] 内部 skill 交叉引用迁移至 myworkflow: 插件前缀
 
 问题描述：
-插件驱动的 skills 系统要求跨 skill 引用使用 `myworkflow:` 前缀（如 `Skill("myworkflow:智能体闭环开发")`），
+插件驱动的 skills 系统要求跨 skill 引用使用 `myworkflow:` 前缀（如 `Skill("myworkflow:agent-dev-loop")`），
 但原有 15 个非写作 skill 文件中的 `Skill()` 调用和 `「」` 文本引用仍使用旧的直接名称（如 `Skill("智能体闭环开发")`）。
 
 变更范围：
@@ -410,6 +474,18 @@ superpowers 迁出：
 | 40. P2 全部修复（3 子智能体并行，~48 项） | ✅ | 2026-07-13 |
 | **第八阶段：Superpowers 能力全量吸收** |||
 | 41. Superpowers Tier 1+2 全量吸收（7 skill + 4 参考文件）+ 全量审计 P0/P1 清零 | ✅ | 2026-07-13 |
+| **第九阶段：增量优化** |||
+| 42. 插件注册 marketplace 修复（@external → @local） | ✅ | 2026-07-22 |
+| 43. skills/ 目录联结丢失修复（第 2 次） | ✅ | 2026-07-22 |
+| **第十阶段：性能优化** |||
+| 44. session-init.sh 启动性能优化（27s → 0.25s，108×） | ✅ | 2026-07-22 |
+| 45. .claude.json + history.jsonl 膨胀诊断 | ✅ | 2026-07-22 |
+| **第十一阶段：引用迁移** |||
+| 46. 内部 skill 交叉引用迁移至 myworkflow: 前缀 | ✅ | 2026-07-22 |
+| **第十二阶段：深度调研强化** |||
+| 47. 深度调研 skill：强制本地 .md 报告落盘 | ✅ | 2026-07-25 |
+| **第十三阶段：Skill 触发可靠性加固** |||
+| 48. 诊断 + 四层修复（F1/F2/F3/F5） | ✅ | 2026-07-26 |
 
 ---
 
@@ -486,11 +562,13 @@ myworkflow 技能包经过 5 个阶段的快速迭代（v1→v2 重构、依赖�
 C:\Users\Lenovo\.claude\plugins\myworkflow\
   README.md
   PROGRESS.md                              ← 本文件
-  PROGRESS-LITE.md                         ← 新增
+  PROGRESS-LITE.md
   hooks/
-    hooks.json                             (v2: 仅 SessionStart, _comment 替代 // 注释)
-    session-init.sh                        (v2: 五分类 + skill 扫描注入, xargs→tr/sed)
-  skills/                                  (16 个 skills, 4 个 references/)
+    hooks.json                             (v2.2: SessionStart + UserPromptSubmit + PostToolUse 三层防线)
+    session-init.sh                        (v2.2: 五分类注入 + 强制化 Skill() 调用 + 编码修复)
+    user-prompt-submit.sh                  (v2.2: 关键词硬路由，增强覆盖)
+    post-tool-use.sh                       (v2.2: 新增——执行期兜底检查)
+  skills/                                  (28 个 skills, 6 个 references/)
     ── 入口 (1) ──
     任务分类入口/SKILL.md                   (v2: 三步工作流 + 反绕过红旗清单)
     ── 代码编写 (6) ──
@@ -525,18 +603,18 @@ C:\Users\Lenovo\.claude\plugins\myworkflow\
 
 ---
 
-## 核心设计决策（截至 2026-07-13）
+## 核心设计决策（截至 2026-07-26）
 
 | # | 决策 | 理由 |
 |---|------|------|
-| 1 | **六组 skills（运行时五分类路由）** | 组织维度六组：入口 / 代码编写 / 文稿撰写 / 深度调研 / 辅助写技能 / 通用技能；运行时路由五分类：代码编写 / 文稿撰写 / 深度调研 / 专项工作 / 其它任务 |
-| 2 | **单一 SessionStart Hook** | 每次会话注入分类指令 + skill 清单，不需要 UserPromptSubmit |
-| 3 | **三步工作流** | 分类 → 需求调查 → 按类型执行 |
-| 4 | **需求调查是通用 skill** | 不是固定工作流步骤——任何需要用户信息的地方都调用它 |
-| 5 | **删除 superpowers** | 所有能力集中到 myworkflow；10 个复刻已物理删除，能力吸收到原生 skills |
-| 6 | **保留任务拆解体系** | 任务拆解与派发/子智能体执行协议/集成验证与修正——用户自己写的 |
+| 1 | **六组 skills（运行时五分类路由）** | 组织维度六组：入口 / 代码编写 / 文稿撰写 / 深度调研 / 辅助写技能 / 通用技能；运行时路由五分类 |
+| 2 | **三层防线 Hook 体系** | SessionStart 注入 + UserPromptSubmit 硬路由 + PostToolUse 执行期兜底（v2.2 新增第三层） |
+| 3 | **三步工作流** | 分类 → 需求澄清 → 按类型执行 |
+| 4 | **统一 myworkflow: 前缀** | 所有 Skill() 调用使用 `myworkflow:` 命名空间前缀，消除裸名/前缀名不一致 |
+| 5 | **Skill() 调用强制化** | 注入指令中 `Skill("name")` 不再作为描述文字，而是显式标注为「使用 Skill 工具调用」|
+| 6 | **响应前自检清单** | 每次输出代码/文件修改前强制回答 3 问（是否调了 Skill？是否跳过澄清？是否真的用了工具？） |
 | 7 | **不集成 writing-plans** | 闭环开发+任务拆解已天生拆解并行，writing-plans 过于啰嗦 |
-| 8 | **Bug 拆为两个 skill** | 排查（只找不修）+ 修复（逼迫细节→找 bug→并行修→循环） |
+| 8 | **Bug 拆为两个 skill** | 排查（只找不修）+ 修复（引导细节→找 bug→并行修→循环） |
 | 9 | **测试融合** | TDD（微观测）→ 真实验证（宏观测），两步都需要 |
 | 10 | **大项目工作维护覆盖跨会话** | 四文件体系实时同步，不需要额外的 state.json |
 | 11 | **Github协作原生替代** | 5 场景闭环（隔离→提交→PR→审查→合并），替代 superpowers 的 3 个 git skills |
@@ -570,12 +648,21 @@ C:\Users\Lenovo\.claude\plugins\myworkflow\
 
 - [ ] **writing-skills + skill-creator 评估**：辅助写技能已建，后续可用它来检验 myworkflow 自身 skills
 - [ ] **端到端联调测试**
+- [ ] **联结丢失根因调查**：`~/.claude/skills/` junctions 第三次丢失，需调查 Windows 下为何反复消失（记录在 `memory/junction-rebuild-deferred.md`）
+
+### P4（已完成，待验证）
+
+- [x] **Skill 触发可靠性四层加固**（2026-07-26）— ⚠️ 需重启 session 后验证新注入 + PostToolUse hook
+  - F3: 编码修复 ✅ | F1: 注入重写 ✅ | F2: PostToolUse hook ✅ | F5: 关键词增强 ✅
 
 ---
 
 ## 待确认事项
 
-- [x] Git 协作方案选哪个？→ 选 A，新建「Github协作」skill 替代 superpowers 的 3 个 git skills（2026-07-13）
-- [x] superpowers 复刻的 10 个 skills 中，哪些保留哪些删除？→ 全部删除（2026-07-13），能力已吸收
-- [ ] Windows 下 Git Bash 路径是否一致？→ 建议：在 Windows 环境实际运行 `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh"` 验证输出
-- [ ] DeepSeek 环境下 Hook 注入的指令 LLM 遵循度如何？→ 建议：在 DeepSeek 模型下启动新会话，检查首个回复是否引用任务分类入口 skill
+- [x] Git 协作方案选哪个？→ 选 A，新建「Github协作」skill（2026-07-13）
+- [x] superpowers 复刻的 10 个 skills 全部删除（2026-07-13），能力已吸收
+- [x] Skill 触发困难根因诊断 + 四层加固修复（2026-07-26）
+- [ ] Windows 下 Git Bash 路径是否一致？→ 新 session 验证
+- [ ] DeepSeek 环境下新注入指令 + PostToolUse hook 是否有效？→ 新 session 验证
+- [ ] PostToolUse hook 的 JSON 解析（grep-based）在所有工具调用下是否正常？→ 新 session 验证
+- [ ] `~/.claude/skills/` 联结丢失根因 → 记录在 memory，待调查

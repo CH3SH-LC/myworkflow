@@ -1,6 +1,6 @@
 {
-  "_comment": "v2 设计决策：SessionStart 注入完整工作流指令（LLM 语义路由），UserPromptSubmit 做轻量关键词硬路由作为程序化兜底。",
-  "description": "MyWorkflow — v2 六组 skills / 五分类运行时路由。SessionStart 注入分类指令 + skill 清单；UserPromptSubmit 关键词匹配注入路由提醒",
+  "_comment": "v2.2 设计：SessionStart 注入工作流指令 + UserPromptSubmit 关键词硬路由 + PostToolUse 执行期兜底。",
+  "description": "MyWorkflow — v2.2 六组 skills / 五分类运行时路由。三层防线：SessionStart 注入 | UserPromptSubmit 入口检测 | PostToolUse 执行期检查",
   "hooks": {
     "SessionStart": [
       {
@@ -31,6 +31,17 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh\"",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use.sh\"",
+            "timeout": 3
           }
         ]
       }

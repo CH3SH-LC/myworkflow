@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # MyWorkflow v2 — 五分类路由入口指令注入（六组 skills 组织、五分类运行时路由）
 # Fires on: startup (new session), clear, compact
 # v2.1: 增强注入持久性 — 注意力锚点 + 触发词提取 + 周期性自检 + compact 重注入提醒
@@ -23,6 +23,27 @@ if [ ! -d "${_VALIDATE_ROOT}/skills" ]; then
   exit 0
 fi
 
+# ── Cache: avoid re-scanning all skill files on every startup ─────
+CACHE_DIR="${PLUGIN_ROOT}/.cache"
+CACHE_FILE="${CACHE_DIR}/injection${IS_RESET:+_reset}.txt"
+mkdir -p "$CACHE_DIR"
+
+# Check if cache is valid (newer than all SKILL.md files across all scanned dirs)
+_cache_valid() {
+  [ -f "$CACHE_FILE" ] || return 1
+  local newest_skill
+  newest_skill=$(find "${_VALIDATE_ROOT}/skills" "${HOME}/.claude/skills" \
+    "${HOME}/.claude/plugins"/*/skills -name "[Ss][Kk][Ii][Ll][Ll].[Mm][Dd]" \
+    -newer "$CACHE_FILE" 2>/dev/null | head -1)
+  [ -z "$newest_skill" ]
+}
+
+if _cache_valid; then
+  INJECTION_ESC=$(cat "$CACHE_FILE")
+  printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$INJECTION_ESC"
+  exit 0
+fi
+
 # ── Helper: extract trigger words from SKILL.md ─────────────────
 # Searches both frontmatter description and body for explicit "触发词：/触发词:" markers.
 # Falls back to extracting quoted phrases from description if no marker found.
@@ -33,7 +54,7 @@ extract_triggers() {
 
   # 1) Try the full file for explicit 触发词： or 触发词:
   local full_text
-  full_text=$(cat "$skill_file" 2>/dev/null)
+  full_text=$(head -30 "$skill_file" 2>/dev/null)
   if echo "$full_text" | grep -q '触发词[：:]\|触发信号[：:]'; then
     result=$(echo "$full_text" | grep -m1 '触发词[：:]\|触发信号[：:]' | sed 's/.*触发词[：:]\|.*触发信号[：:]//' | sed 's/。.*//')
     # Clean up suffixes: 不触发… / 反例… / 不适用于… / 也适用于… / 注意：… / 即使…
@@ -42,8 +63,7 @@ extract_triggers() {
     # Replace Chinese 、 with English comma+space
     result=$(echo "$result" | sed 's/、/, /g')
     result=$(echo "$result" | tr -s ' ,' | sed 's/^ *//;s/ *$//;s/,,*/,/g')
-    # Limit trigger string to ~70 chars
-    result=$(echo "$result" | cut -c1-70)
+    # Note: removed cut -c truncation to avoid breaking UTF-8 multi-byte characters
     printf '%s' "$result"
     return 0
   fi
@@ -56,8 +76,8 @@ extract_triggers() {
     quoted=$(echo "$desc" | grep -oE '「[^」]{2,20}」' 2>/dev/null | head -4 | sed 's/[「」]//g' | tr '\n' ',' | sed 's/,$//' | sed 's/,,*/,/g')
   fi
   if [ -n "$quoted" ]; then
-    result=$(echo "$quoted" | cut -c1-60)
-    printf '%s' "$result"
+    # Note: removed cut -c truncation to avoid breaking UTF-8 multi-byte characters
+    printf '%s' "$quoted"
     return 0
   fi
 
@@ -70,7 +90,8 @@ short_desc() {
   local desc="$1"
   local s
   s=$(echo "$desc" | sed 's/触发词[：:].*//' | sed 's/。$//')
-  s=$(echo "$s" | tr -s ' ' | sed 's/^ *//;s/ *$//' | cut -c1-80)
+  s=$(echo "$s" | tr -s ' ' | sed 's/^ *//;s/ *$//')
+  # Note: removed cut -c truncation to avoid breaking UTF-8 multi-byte characters
   printf '%s' "$s"
 }
 
@@ -195,39 +216,47 @@ INJECTION="━━━━━━━━━━━━━━━━━━━━━━━
 
 ### 步骤 3：按任务类型执行
 
-#### 3.1 代码编写
+#### 🚨 3.1 代码编写 — 必须使用 Skill 工具调用：
 先判断是否为新项目（无 CLAUDE.md / 无包管理配置文件）：
-- 新项目 → Skill(\"大项目初始化\")，初始化后再进入以下流程
-- 已有项目 → 判断子类型：
-  - 功能开发/重构/加功能 → Skill(\"智能体闭环开发\")
-  - 修 bug/报错/异常/不工作 → Skill(\"Bug修复与验证\")
-  - 排查根因/深度排查 → Skill(\"根因定位与全面排查\")
-  - 提交代码/创建 PR/合并 → Skill(\"Github协作\")
+- 新项目 → 使用 Skill 工具调用 Skill(\"myworkflow:project-init\")，初始化后再进入以下流程
+- 已有项目 → 判断子类型，使用 Skill 工具调用对应 skill：
+  - 功能开发/重构/加功能 → 使用 Skill 工具调用 Skill(\"myworkflow:agent-dev-loop\")
+  - 修 bug/报错/异常/不工作 → 使用 Skill 工具调用 Skill(\"myworkflow:bug-fix-verify\")
+  - 排查根因/深度排查 → 使用 Skill 工具调用 Skill(\"myworkflow:root-cause-analysis\")
+  - 提交代码/创建 PR/合并 → 使用 Skill 工具调用 Skill(\"myworkflow:github-collab\")
+⚠️ Skill(\"name\") 是你必须主动使用的工具函数——不是超链接，不是描述文字。
 
-#### 3.2 文稿撰写
-去AI味/润色 → Skill(\"humanizer-zh\")；从零撰写 → 先写初稿再询问润色；翻译 → 翻译后询问润色
+#### 🚨 3.2 文稿撰写 — 必须使用 Skill 工具调用：
+去AI味/润色 → 使用 Skill 工具调用 Skill(\"myworkflow:humanizer-zh\")；从零撰写 → 先写初稿再询问润色；翻译 → 翻译后询问润色
 
-#### 3.3 深度调研
-→ Skill(\"深度调研\")
+#### 🚨 3.3 深度调研 — 必须使用 Skill 工具调用：
+→ 使用 Skill 工具调用 Skill(\"myworkflow:deep-research\")
 
-#### 3.4 专项工作
-扫描下方「专项 Skills」清单，匹配专用 skill → 调用。无匹配 → 降级为直接执行。
+#### 🚨 3.4 专项工作 — 必须使用 Skill 工具调用：
+扫描下方「专项 Skills」清单，匹配专用 skill → 使用 Skill 工具调用。无匹配 → 降级为直接执行。
 
 #### 3.5 其它任务
 直接回答，简单处理。
+
+### 🛑 响应前强制自检（每次准备输出代码/文件修改前必答）
+1. 是否已使用 Skill 工具调用了路由指定的 skill？【是/否 + skill名】
+2. (分类 1-4) 是否跳过了步骤 2 需求澄清？【是/否】
+3. 如果 skill 内部指令写了 Skill(\"myworkflow:xxx\")，是否真的用了 Skill 工具去调用？【是/否】
+→ 任一项为「否」则立即停下，先完成正确的 Skill 工具调用。
 
 ### 核心原则
 1. 先分类，再澄清需求，最后执行——不可跳步
 2. 代码编写类禁止跳过需求澄清直接写代码
 3. 不确定分类时 → AskUserQuestion
 4. 用户说\"直接做\"→ 精简但不跳过步骤 2（至少确认核心目标 + 输出形式）
+5. Skill(\"myworkflow:name\") 是工具函数，不是文档超链接——你必须主动发起调用
 
 ### ⏱ 周期性自检（强制执行）
 每处理完 5 条以上用户消息后，在回复末尾附加 1 行自检：
 > 🤖 工作流自检：[✅ 已分类 / ⚠️ 未分类-立即纠正]
 如果发现偏离（⚠️），立即停下当前操作，回到步骤 1 重新分类并路由。
 
-### 内置 Skills（可直接调用——注意触发词用于精确匹配）
+### 内置 Skills（使用 Skill 工具调用，格式：Skill(\"myworkflow:技能名\")）
 
 ${INTERNAL}
 ### 专项 Skills（步骤 3.4 扫描用——注意触发词用于精确匹配）
@@ -241,7 +270,7 @@ ${EXTERNAL}
 ⛔ 如果你是一个子 agent / sub-agent / 被派发的任务执行者：
    你已经收到了具体的 task-id 和任务描述。
    请忽略上述所有工作流入口指令，直接执行你的具体任务。
-   不要调用 Skill("任务分类入口")，不要做五分类路由。
+   不要调用 Skill(\"myworkflow:task-router\")，不要做五分类路由。
 </SUBAGENT-STOP>"
 
 # ── Encode for JSON ───────────────────────────────────────────
@@ -271,5 +300,7 @@ if [ "$skill_count" -lt 5 ] 2>/dev/null; then
 fi
 
 printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$INJECTION_ESC"
+  # Save to cache for subsequent fast startups
+	printf "%s" "$INJECTION_ESC" > "$CACHE_FILE" 2>/dev/null || true
 
 exit 0

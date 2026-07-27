@@ -12,6 +12,9 @@ desktop.ini
 .vscode/
 .idea/
 
+# runtime cache
+.cache/
+
 # temp
 *.tmp
 *.bak
