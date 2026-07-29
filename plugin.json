@@ -24,7 +24,8 @@
     "skills/subagent-protocol",
     "skills/integration-verify",
     "skills/lightweight-dispatch",
-    "skills/anti-sycophancy"
+    "skills/anti-sycophancy",
+    "skills/real-world-verify"
   ],
   "keywords": [
     "workflow",
