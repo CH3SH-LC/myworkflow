@@ -15,6 +15,10 @@ desktop.ini
 # runtime cache
 .cache/
 
+# Python
+__pycache__/
+*.pyc
+
 # temp
 *.tmp
 *.bak
