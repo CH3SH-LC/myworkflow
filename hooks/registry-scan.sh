@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MyWorkflow registry-scan.sh
+# MyWorkflow v4 registry-scan.sh
 # 扫描 installed_plugins.json 注册的全部插件技能，刷新 config/special-skills.json 的 inventory 段（categories 保留不动）。
 # 用法: bash registry-scan.sh [plugins_root] [out_file]
 # 只扫真正注册的插件（installed_plugins.json 的 installPath），不再全量 os.walk plugins/ 根目录，

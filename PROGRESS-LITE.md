@@ -6,6 +6,8 @@
 
 ## 2026-08-04
 
+- **[Release] v3.1 → v4.0.0** —— v3（c9ebaa3 拆钩子扁平版）固化到 GitHub 独立 `v3` 分支；master 升 v4（阶段感知锚点 + 注册表触发词修复）
+
 - **[Fix] 后半程技能触发概率下降** —— v3 拆掉 UserPromptSubmit/PostToolUse 执行期强制后，只剩入口期软提示，非入口/后半程 skill（root-cause、real-world-verify、github-collab 等）不触发
   - 根因三连：(1) 锚点"没有匹配的 skill 就自己完成"= 放行跳过；(2) 5 类分类只覆盖入口、无阶段概念；(3) 注册表触发词被 120 字截断（real-world-verify 截在"确"、storage-analyzer 为字面 ">"）
   - [Fix] 锚点改阶段感知：阶段3 bug→root-cause-analysis、子任务完成→integration-verify、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh；删除放行授权

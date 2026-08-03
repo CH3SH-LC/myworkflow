@@ -1,7 +1,20 @@
 ﻿# MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-08-04（第二十阶段：后半程技能触发概率修复——阶段感知锚点 + 注册表触发词修复）
+> 最后更新：2026-08-04（第二十一阶段：v3.1 → v4.0.0 发布——v3 固化为独立分支）
+
+---
+
+## 2026-08-04（第二十一阶段：v3.1 → v4.0.0 发布——v3 固化为独立分支）
+
+### [Release] v3 分支化 + v4 版本号提升
+
+- [Fix] v3（`c9ebaa3` 拆钩子扁平版）在 GitHub 单开 `v3` 分支：`git branch v3 c9ebaa3` → `git push -u origin v3`（已推送到 `https://github.com/CH3SH-LC/myworkflow`）
+- [Bump] master 版本号 v3.1.0 → v4.0.0：`plugin.json`、`.claude-plugin/plugin.json`（version 3.0.0→4.0.0）、`hooks/hooks.json`（v3.1→v4）、`hooks/session-init.sh`、`hooks/registry-scan.sh` 头注释、`README.md`（当前版本 + 设计理念表）
+- 版本线：`v3` 分支 = 扁平化（无执行期钩子）；`master` = v4（阶段感知锚点 + 专项注册表 + 注册表触发词修复）
+
+**变更文件**
+- Bump: `plugin.json`、`.claude-plugin/plugin.json`、`hooks/hooks.json`、`hooks/session-init.sh`、`hooks/registry-scan.sh`、`README.md`、`PROGRESS-LITE.md`、`PROGRESS.md`
 
 ---
 
@@ -714,14 +727,14 @@ myworkflow 技能包经过 5 个阶段的快速迭代（v1→v2 重构、依赖�
 
 ```
 C:\Users\Lenovo\.claude\plugins\myworkflow\
-  plugin.json                              (marketplace 发布清单，v3.0.0)
-  .claude-plugin/plugin.json               (运行时发现元数据，v3.0.0)
+  plugin.json                              (marketplace 发布清单，v4.0.0)
+  .claude-plugin/plugin.json               (运行时发现元数据，v4.0.0)
   README.md
   PROGRESS.md                              ← 本文件
   PROGRESS-LITE.md
   hooks/
-    hooks.json                             (v3.1: 仅 SessionStart，startup + clear|compact，timeout 15s)
-    session-init.sh                        (v3.1: 分类概念锚点 + 注册表刷新；子智能体注入协议锚点)
+    hooks.json                             (v4: 仅 SessionStart，startup + clear|compact，timeout 15s)
+    session-init.sh                        (v4: 阶段感知锚点 + 注册表刷新；子智能体注入协议锚点)
     registry-scan.sh                       (专项注册表扫描生成器)
   config/
     special-skills.json                    (专项注册表：categories 人工 + inventory 自动)
