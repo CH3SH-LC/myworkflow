@@ -1,7 +1,58 @@
 ﻿# MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-08-04（第十八阶段：v3.1 专项注册表 + 架构演进实现）
+> 最后更新：2026-08-04（第二十阶段：后半程技能触发概率修复——阶段感知锚点 + 注册表触发词修复）
+
+---
+
+## 2026-08-04（第二十阶段：后半程技能触发概率修复——阶段感知锚点 + 注册表触发词修复）
+
+### [Fix] 非入口/后半程技能触发概率下降
+
+**现象**
+- 入口 skill（agent-dev-loop、deep-research 等）仍正常触发；但后半程 skill（root-cause-analysis、real-world-verify、integration-verify、github-collab、humanizer-zh 等）不再触发或触发概率明显下降
+
+**根因**
+- v3 重构（`c9ebaa3`）拆掉两层执行期强制：`UserPromptSubmit` 关键词硬路由 + `PostToolUse` 执行期兜底（≥3 次非 Skill 工具调用即提醒下游 Skill()），并把 16KB 五分类仪式压缩为 ~200 字锚点
+- 结果只剩入口期软提示，而它恰好带病：
+  1. **放行授权**："没有匹配的 skill 就自己完成" —— 模型在阶段3 遇 bug、阶段4 该验证时默认直接自己干，不回查技能
+  2. **只覆盖入口分类**：`代码编写/文稿撰写/深度调研/专项任务/简单问答` 是按"用户请求"分类，不含"任务阶段"概念，后半程 skill 靠任务状态触发而非用户请求
+  3. **注册表触发词被截断**（`registry-scan.sh` 的 `desc[:120]`）：real-world-verify 截在"确"、root-cause 截在"防御性/"、github-collab 截在"pull r"、storage-analyzer 的 YAML 折叠标量只取到字面 `>`
+
+**修复（不加钩子，保持 v3 无仪式）**
+- [Fix] `hooks/session-init.sh` 锚点改阶段感知：删除"没有匹配就自己完成"；明确阶段→skill 链（阶段3 bug→root-cause-analysis、子任务完成→integration-verify、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh）；保留 5 类入口分类 + 注册表查询指引
+- [Fix] `hooks/registry-scan.sh`：新增 `parse_frontmatter()` 兼容 YAML 折叠/字面块标量（`>`/`|`）；`trigger` 存完整描述，去掉 120 字截断
+
+**验证**
+- inventory 39 项零截断（无 len==120 条目）、零占位符（storage-analyzer 恢复 446 字完整触发词）
+- 两脚本 `bash -n` 语法通过；锚点 JSON 输出正确；SessionStart 自动刷新复用新脚本，幂等
+
+**变更文件**
+- Modify: `hooks/session-init.sh`、`hooks/registry-scan.sh`、`config/special-skills.json`、`PROGRESS-LITE.md`、`PROGRESS.md`
+
+---
+
+## 2026-08-04（第十九阶段：注册表严格化——仅扫已注册插件）
+
+### [Cleanup] 专项注册表冗余技能清理
+
+**根因**
+- `registry-scan.sh` 以 `~/.claude/plugins/` 整个目录树为扫描根（`os.walk`），其中 `marketplaces/claude-plugins-official/` 是官方 marketplace 仓库的完整克隆，内含全部插件源码
+- 30 个来自**从未安装/启用**插件的 SKILL.md（cwc-makers、discord/imessage/telegram、hookify、playground、mcp-server-dev、plugin-dev、math-olympiad、claude-md-management、project-artifact、session-report、receipts、example-plugin 等）被误扫进 inventory
+- inventory 66 项、categories 14 类里混入大量用户不认识、也不可调用的技能
+
+**修复**
+- [Fix] `hooks/registry-scan.sh`：改为解析 `installed_plugins.json`，对每个注册插件的 `installPath` 单独 `os.walk`（排除 .git/node_modules/.cache/.code 缓存，深度 ≤12）；plugin 名取自 `name@scope` 的 name，不再依赖路径结构推断
+- [Cleanup] `config/special-skills.json`：清理 categories 中 28 个不在已注册插件清单的死 slug；删除 5 个被清空的分类（MCP 开发、硬件开发、数学竞赛、报告与统计、消息机器人）
+
+**验证**
+- inventory 66→39：myworkflow 22 / webnovel-studio 9 / microsoft-docs 3 / large-project-work 2 / claude-code-setup、frontend-design、skill-creator 各 1
+- categories 9 类、25 slug、零死链；JSON 全合法（count==实际数、slug 唯一、无违规引用）
+- SessionStart hook 自动刷新复用新脚本，幂等可重复跑
+
+**变更文件**
+- Modify: `hooks/registry-scan.sh`、`config/special-skills.json`、`PROGRESS-LITE.md`、`PROGRESS.md`
+- 备份: `config/special-skills.json.bak-20260804-022044`、`hooks/registry-scan.sh.bak-20260804-022044`
 
 ---
 

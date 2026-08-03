@@ -34,193 +34,74 @@
     ],
     "Skill/插件开发": [
       "skill-creator:skill-creator",
-      "myworkflow:skill-authoring",
-      "plugin-dev:skill-development",
-      "plugin-dev:agent-development",
-      "plugin-dev:command-development",
-      "plugin-dev:hook-development",
-      "plugin-dev:plugin-settings",
-      "plugin-dev:plugin-structure"
-    ],
-    "MCP 开发": [
-      "plugin-dev:mcp-integration",
-      "mcp-server-dev:build-mcp-app",
-      "mcp-server-dev:build-mcp-server",
-      "mcp-server-dev:build-mcpb"
-    ],
-    "硬件开发": [
-      "cwc-makers:cardputer-buddy",
-      "cwc-makers:m5-onboard"
-    ],
-    "数学竞赛": [
-      "math-olympiad:math-olympiad"
-    ],
-    "报告与统计": [
-      "project-artifact:project-artifact",
-      "session-report:session-report",
-      "receipts:receipts"
+      "myworkflow:skill-authoring"
     ],
     "Microsoft 文档": [
       "microsoft-docs:microsoft-docs",
       "microsoft-docs:microsoft-code-reference",
       "microsoft-docs:microsoft-skill-creator"
     ],
-    "消息机器人": [
-      "discord:access",
-      "discord:configure",
-      "imessage:access",
-      "imessage:configure",
-      "telegram:access",
-      "telegram:configure"
-    ],
     "配置优化": [
-      "claude-code-setup:claude-automation-recommender",
-      "claude-md-management:claude-md-improver",
-      "hookify:writing-rules",
-      "playground:playground"
+      "claude-code-setup:claude-automation-recommender"
     ]
   },
   "inventory": {
-    "updatedAt": "2026-08-04T01:53:38",
-    "count": 66,
+    "updatedAt": "2026-08-04T02:44:08",
+    "count": 39,
     "skills": [
       {
         "plugin": "claude-code-setup",
         "slug": "claude-code-setup:claude-automation-recommender",
         "name": "claude-automation-recommender",
-        "trigger": "Analyze a codebase and recommend Claude Code automations (hooks, subagents, skills, plugins, MCP servers). Use when user"
-      },
-      {
-        "plugin": "claude-md-management",
-        "slug": "claude-md-management:claude-md-improver",
-        "name": "claude-md-improver",
-        "trigger": "Audit and improve CLAUDE.md files in repositories. Use when user asks to check, audit, update, improve, or fix CLAUDE.md"
-      },
-      {
-        "plugin": "cwc-makers",
-        "slug": "cwc-makers:cardputer-buddy",
-        "name": "cardputer-buddy",
-        "trigger": "Iterate on the Cardputer-Adv MicroPython app bundle (Claude Buddy, Snake, Hello) after the device is already provisioned"
-      },
-      {
-        "plugin": "cwc-makers",
-        "slug": "cwc-makers:m5-onboard",
-        "name": "m5-onboard",
-        "trigger": "End-to-end onboarding for a freshly-plugged-in M5Stack ESP32 device (Cardputer, Cardputer-Adv, Core, CoreS3, Stick) — de"
-      },
-      {
-        "plugin": "discord",
-        "slug": "discord:access",
-        "name": "access",
-        "trigger": "Manage Discord channel access — approve pairings, edit allowlists, set DM/group policy. Use when the user asks to pair, "
-      },
-      {
-        "plugin": "discord",
-        "slug": "discord:configure",
-        "name": "configure",
-        "trigger": "Set up the Discord channel — save the bot token and review access policy. Use when the user pastes a Discord bot token, "
-      },
-      {
-        "plugin": "example-plugin",
-        "slug": "example-plugin:example-command",
-        "name": "example-command",
-        "trigger": "An example user-invoked skill that demonstrates frontmatter options and the skills/<name>/SKILL.md layout"
-      },
-      {
-        "plugin": "example-plugin",
-        "slug": "example-plugin:example-skill",
-        "name": "example-skill",
-        "trigger": "This skill should be used when the user asks to \"demonstrate skills\", \"show skill format\", \"create a skill template\", or"
+        "trigger": "Analyze a codebase and recommend Claude Code automations (hooks, subagents, skills, plugins, MCP servers). Use when user asks for automation recommendations, wants to optimize their Claude Code setup, mentions improving Claude Code workflows, asks how to first set up Claude Code for a project, or wants to know what Claude Code features they should use."
       },
       {
         "plugin": "frontend-design",
         "slug": "frontend-design:frontend-design",
         "name": "frontend-design",
-        "trigger": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthe"
-      },
-      {
-        "plugin": "hookify",
-        "slug": "hookify:writing-rules",
-        "name": "writing-hookify-rules",
-        "trigger": "This skill should be used when the user asks to \"create a hookify rule\", \"write a hook rule\", \"configure hookify\", \"add "
-      },
-      {
-        "plugin": "imessage",
-        "slug": "imessage:access",
-        "name": "access",
-        "trigger": "Manage iMessage channel access — approve pairings, edit allowlists, set DM/group policy. Use when the user asks to pair,"
-      },
-      {
-        "plugin": "imessage",
-        "slug": "imessage:configure",
-        "name": "configure",
-        "trigger": "Check iMessage channel setup and review access policy. Use when the user asks to configure iMessage, asks \"how do I set "
+        "trigger": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults."
       },
       {
         "plugin": "large-project-work",
         "slug": "large-project-work:大项目初始化",
         "name": "大项目初始化",
-        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项"
+        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项目结构设置、大项目初始化、搭建项目骨架。也适用于项目变复杂后需要从零建立文档管理体系的场景。反例：已有完善四文件体系的项目（应使用「大项目工作维护」）、单文件脚本、临时小工具。"
       },
       {
         "plugin": "large-project-work",
         "slug": "large-project-work:大项目工作维护",
         "name": "大项目工作维护",
-        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUC"
-      },
-      {
-        "plugin": "math-olympiad",
-        "slug": "math-olympiad:math-olympiad",
-        "name": "math-olympiad",
-        "trigger": "\"Solve competition math problems (IMO, Putnam, USAMO, AIME) with adversarial"
-      },
-      {
-        "plugin": "mcp-server-dev",
-        "slug": "mcp-server-dev:build-mcp-app",
-        "name": "build-mcp-app",
-        "trigger": "This skill should be used when the user wants to build an \"MCP app\", add \"interactive UI\" or \"widgets\" to an MCP server,"
-      },
-      {
-        "plugin": "mcp-server-dev",
-        "slug": "mcp-server-dev:build-mcp-server",
-        "name": "build-mcp-server",
-        "trigger": "This skill should be used when the user asks to \"build an MCP server\", \"create an MCP\", \"make an MCP integration\", \"wrap"
-      },
-      {
-        "plugin": "mcp-server-dev",
-        "slug": "mcp-server-dev:build-mcpb",
-        "name": "build-mcpb",
-        "trigger": "This skill should be used when the user wants to \"package an MCP server\", \"bundle an MCP\", \"make an MCPB\", \"ship a local"
+        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md，最后验证无遗漏。触发词：更新进度、同步文档、记录工作、维护项目文档。隐式触发：CLAUDE.md 引导调用时，或项目根目录存在四文件体系且产生了代码变更。反例：项目尚未初始化四文件（应先调用「大项目初始化」）、纯问答、无代码产出的讨论。"
       },
       {
         "plugin": "microsoft-docs",
         "slug": "microsoft-docs:microsoft-code-reference",
         "name": "microsoft-code-reference",
-        "trigger": "Find working code samples, verify API signatures, and fix Microsoft SDK errors using official docs. Use whenever the use"
+        "trigger": "Find working code samples, verify API signatures, and fix Microsoft SDK errors using official docs. Use whenever the user is writing, debugging, or reviewing code that touches any Microsoft SDK, .NET library, Azure client library, or Microsoft API—even if they don't ask for a \"reference.\" Catches hallucinated methods, wrong signatures, and deprecated patterns. If the task involves producing or fixing Microsoft-related code, this is the right skill."
       },
       {
         "plugin": "microsoft-docs",
         "slug": "microsoft-docs:microsoft-docs",
         "name": "microsoft-docs",
-        "trigger": "Understand Microsoft technologies by querying official documentation. Use whenever the user asks how something works, wa"
+        "trigger": "Understand Microsoft technologies by querying official documentation. Use whenever the user asks how something works, wants tutorials, needs configuration options, limits, quotas, or best practices for any Microsoft technology (Azure, .NET, M365, Windows, Power Platform, etc.)—even if they don't mention \"docs.\" If the question is about understanding a concept rather than writing code, this is the right skill."
       },
       {
         "plugin": "microsoft-docs",
         "slug": "microsoft-docs:microsoft-skill-creator",
         "name": "microsoft-skill-creator",
-        "trigger": "Create agent skills for Microsoft technologies using official documentation. Use whenever the user wants to build, gener"
+        "trigger": "Create agent skills for Microsoft technologies using official documentation. Use whenever the user wants to build, generate, or scaffold a skill for any Microsoft technology (Azure, .NET, M365, VS Code, Bicep, etc.)—even phrased casually like \"make a skill for Cosmos DB.\" Investigates the topic via official docs, then generates a hybrid skill with essential knowledge stored locally and dynamic lookups for depth."
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:agent-dev-loop",
         "name": "智能体闭环开发",
-        "trigger": "**必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill。触发包括但不限于：\"帮我加个XX\"\"把这"
+        "trigger": "**必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill。触发包括但不限于：\"帮我加个XX\"\"把这个改成XX\"\"这里能不能XX\"\"写一个XX\"\"实现XX\"\"重构XX\"\"新增XX\"\"改一下XX\"\"有个bug\"\"报错了\"\"坏了\"。即使请求只有几个字（如\"加个登录\"），也必须触发。禁止跳过。禁止仅用单元测试代替真实验证。不触发仅限：纯问答、闲聊、代码解释/阅读、纯根因排查（只查不修，用 root-cause-analysis）。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:anti-sycophancy",
         "name": "反谄媚",
-        "trigger": "Use when 检测到以下红旗场景时自动激活——触发场景：用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求。不触发仅限：纯信息查询、"
+        "trigger": "Use when 检测到以下红旗场景时自动激活——触发场景：用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求。不触发仅限：纯信息查询、闲聊、用户明确要求停止质疑。"
       },
       {
         "plugin": "myworkflow",
@@ -238,7 +119,7 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:github-collab",
         "name": "Github协作",
-        "trigger": "Use when 需要将代码变更推送到 GitHub、创建 PR、进行 code review、合并分支、使用 git worktree 隔离开发，或任何涉及 Git/GitHub 协作的操作。触发词：提交代码、push、PR、pull r"
+        "trigger": "Use when 需要将代码变更推送到 GitHub、创建 PR、进行 code review、合并分支、使用 git worktree 隔离开发，或任何涉及 Git/GitHub 协作的操作。触发词：提交代码、push、PR、pull request、创建 PR、合并、merge、rebase、分支、branch、worktree、代码审查、code review、推送到远程、发起合入、审查这个 PR。不触发：纯本地只读查询（git log/git diff/git status/git branch -v 等不改变仓库状态的命令）。"
       },
       {
         "plugin": "myworkflow",
@@ -262,37 +143,37 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:lightweight-dispatch",
         "name": "轻量级派发",
-        "trigger": "Use when 面对可以并行执行的 N 个可平铺、无依赖、单一目标的子任务时——适用于搜索、查询、简单生成、信息收集等可自然并行的轻量任务。触发信号：用户一次请求中描述了多项同类独立工作（如\"搜索 X 个人的信息\"\"同时查 A、B、C 的"
+        "trigger": "Use when 面对可以并行执行的 N 个可平铺、无依赖、单一目标的子任务时——适用于搜索、查询、简单生成、信息收集等可自然并行的轻量任务。触发信号：用户一次请求中描述了多项同类独立工作（如\"搜索 X 个人的信息\"\"同时查 A、B、C 的文档\"\"分别生成 3 个简单文件\"）。如果判断任务实际上需要结构化拆解和接口合约，则升级到「任务拆解与派发」。不触发仅限：单一原子操作、任务间存在强依赖、需要结构化合约的复杂多步骤任务。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:pdf-to-markdown",
         "name": "pdf-to-markdown",
-        "trigger": "Extract content from scanned/image-based PDFs using OCR, then reconstruct formulas, equations, and technical notation in"
+        "trigger": "Extract content from scanned/image-based PDFs using OCR, then reconstruct formulas, equations, and technical notation into proper LaTeX using contextual reasoning. Use this skill whenever the user asks to: extract text from scanned PDFs, OCR a PDF, convert scanned textbook/document pages to Markdown, reconstruct formulas/symbols from OCR output, digitize a physical document containing equations, convert image-based PDF to Markdown with LaTeX, or process scanned technical/scientific content. Works with any language supported by Tesseract OCR."
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:project-init",
         "name": "大项目初始化",
-        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项"
+        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项目结构设置、大项目初始化、搭建项目骨架。也适用于项目变复杂后需要从零建立文档管理体系的场景。反例：已有完善四文件体系的项目（应使用「大项目工作维护」）、单文件脚本、临时小工具。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:project-maintain",
         "name": "大项目工作维护",
-        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUC"
+        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md，最后验证无遗漏。触发词：更新进度、同步文档、记录工作、维护项目文档。隐式触发：CLAUDE.md 引导调用时，或项目根目录存在四文件体系且产生了代码变更。反例：项目尚未初始化四文件（应先调用「大项目初始化」）、纯问答、无代码产出的讨论。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:real-world-verify",
         "name": "真实验证",
-        "trigger": "**强制门禁**——在智能体闭环开发阶段4（含 bug 修复验证）、根因定位修复验证、Github协作提交前，必须调用本 skill 执行真实验证。禁止仅跑单元测试、禁止只测部分路径、禁止无证据声称\"验证通过\"。触发词：验证、检查、测试、确"
+        "trigger": "**强制门禁**——在智能体闭环开发阶段4（含 bug 修复验证）、根因定位修复验证、Github协作提交前，必须调用本 skill 执行真实验证。禁止仅跑单元测试、禁止只测部分路径、禁止无证据声称\"验证通过\"。触发词：验证、检查、测试、确认功能、跑一遍。不触发仅限：纯文档修改、纯配置修改、无代码变更的讨论。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:registry-maintain",
         "name": "专项注册表维护",
-        "trigger": "Use when 需要更新专项任务注册表（config/special-skills.json）、添加或移除专项 skill、或回答\"有哪些专项技能/专项 skill\"时调用。触发词：更新专项清单、专项注册表、有哪些专项、special-s"
+        "trigger": "Use when 需要更新专项任务注册表（config/special-skills.json）、添加或移除专项 skill、或回答\"有哪些专项技能/专项 skill\"时调用。触发词：更新专项清单、专项注册表、有哪些专项、special-skills、注册表维护。不触发：纯使用某个专项 skill（直接调目标 skill）。"
       },
       {
         "plugin": "myworkflow",
@@ -304,25 +185,25 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:root-cause-analysis",
         "name": "根因定位与全面排查",
-        "trigger": "Use when 智能体闭环开发 阶段3 遇到 bug 需定位根因，或用户直接要求深度排查。提供系统化根因定位方法论（5 Whys + 数据流逆向 + 假设-验证循环）+ 全面性扫描 + 五项专项排查技术（竞态/插桩/Bisect/防御性/"
+        "trigger": "Use when 智能体闭环开发 阶段3 遇到 bug 需定位根因，或用户直接要求深度排查。提供系统化根因定位方法论（5 Whys + 数据流逆向 + 假设-验证循环）+ 全面性扫描 + 五项专项排查技术（竞态/插桩/Bisect/防御性/Flaky）。触发词：根因、root cause、为什么、深层原因、全面排查、找全、还有没有别的、同类 bug、数据流追踪、5 whys、深度排查。只定位和报告，不修代码——修复由智能体闭环开发执行。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:self-study-guide",
         "name": "self-study-guide",
-        "trigger": "Transform structured STEM content (textbooks, lectures, academic papers) into rigorous, accessible study guides — delive"
+        "trigger": "Transform structured STEM content (textbooks, lectures, academic papers) into rigorous, accessible study guides — delivered as if a university lecturer is teaching a student from scratch (textbook mode) or a research mentor is walking a junior through a paper (paper mode). Use whenever the user asks to create study notes, distill textbook sections, make exam prep materials, read/explain a paper, or \"提炼/整理/总结\" course/paper content — for math, physics, computer science, engineering, and related disciplines. Each invocation processes ONE chapter or paper section as a self-contained lecture. The skill follows a \"formal statement → plain-language explanation\" paradigm: every definition, theorem, and notation is stated formally first, then immediately unpacked in plain language with physical intuition and step-by-step reasoning. Includes a mandatory self-review phase before output."
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:skill-authoring",
         "name": "辅助写技能",
-        "trigger": "Use when 用户需要创建、修改、优化或审查一个 skill（SKILL.md），或者讨论 skill 的设计。触发词：创建 skill、写一个 skill、新建技能、修改 skill、优化 skill、skill 怎么写、帮我设计 s"
+        "trigger": "Use when 用户需要创建、修改、优化或审查一个 skill（SKILL.md），或者讨论 skill 的设计。触发词：创建 skill、写一个 skill、新建技能、修改 skill、优化 skill、skill 怎么写、帮我设计 skill、审查这个 skill、这个 skill 有什么问题。不触发：纯使用 skill（直接调目标 skill）、与 skill 无关的代码编写、闲聊式评价 skill（如\"这 skill 挺好\"）。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:storage-analyzer",
         "name": "storage-analyzer",
-        "trigger": ">"
+        "trigger": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。"
       },
       {
         "plugin": "myworkflow",
@@ -334,7 +215,7 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:task-dispatch",
         "name": "任务拆解与派发",
-        "trigger": "Use when 面对任何非平凡的多步骤任务时，agent 应主动调用本 skill 评估是否需要拆解为并行子任务。适用于所有任务类型——编码、写作、研究、设计、规划、数据处理。触发信号：涉及多个产出物、任务存在可自然分离的子目标、预估需要"
+        "trigger": "Use when 面对任何非平凡的多步骤任务时，agent 应主动调用本 skill 评估是否需要拆解为并行子任务。适用于所有任务类型——编码、写作、研究、设计、规划、数据处理。触发信号：涉及多个产出物、任务存在可自然分离的子目标、预估需要多个独立步骤、或用户一次请求中描述了多项工作。核心原则：宁可误触发后判定\"不需要拆解\"，也不因跳过而串行执行可并行的任务。不触发仅限：单一原子操作、简单问答、纯信息查询。"
       },
       {
         "plugin": "myworkflow",
@@ -343,88 +224,10 @@
         "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill，或疑似专项任务时查表。分类概念由会话注入（hook）提供，本表只作速查。不适用于子智能体。"
       },
       {
-        "plugin": "playground",
-        "slug": "playground:playground",
-        "name": "playground",
-        "trigger": "Creates interactive HTML playgrounds — self-contained single-file explorers that let users configure something visually "
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:agent-development",
-        "name": "agent-development",
-        "trigger": "This skill should be used when the user asks to \"create an agent\", \"add an agent\", \"write a subagent\", \"agent frontmatte"
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:command-development",
-        "name": "command-development",
-        "trigger": "This skill should be used when the user asks to \"create a slash command\", \"add a command\", \"write a custom command\", \"de"
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:hook-development",
-        "name": "hook-development",
-        "trigger": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate too"
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:mcp-integration",
-        "name": "mcp-integration",
-        "trigger": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp."
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:plugin-settings",
-        "name": "plugin-settings",
-        "trigger": "This skill should be used when the user asks about \"plugin settings\", \"store plugin configuration\", \"user-configurable p"
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:plugin-structure",
-        "name": "plugin-structure",
-        "trigger": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \""
-      },
-      {
-        "plugin": "plugin-dev",
-        "slug": "plugin-dev:skill-development",
-        "name": "skill-development",
-        "trigger": "This skill should be used when the user wants to \"create a skill\", \"add a skill to plugin\", \"write a new skill\", \"improv"
-      },
-      {
-        "plugin": "project-artifact",
-        "slug": "project-artifact:project-artifact",
-        "name": "project-artifact",
-        "trigger": "Generate and publish a project status artifact — an opinionated, tabbed status page for a project too big for one update"
-      },
-      {
-        "plugin": "receipts",
-        "slug": "receipts:receipts",
-        "name": "receipts",
-        "trigger": "Generate a personal Claude Code usage & impact report (\"receipts\") from this machine's local session transcripts — for j"
-      },
-      {
-        "plugin": "session-report",
-        "slug": "session-report:session-report",
-        "name": "session-report",
-        "trigger": "Generate an explorable HTML report of Claude Code session usage (tokens, cache, subagents, skills, expensive prompts) fr"
-      },
-      {
         "plugin": "skill-creator",
         "slug": "skill-creator:skill-creator",
         "name": "skill-creator",
-        "trigger": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a sk"
-      },
-      {
-        "plugin": "telegram",
-        "slug": "telegram:access",
-        "name": "access",
-        "trigger": "Manage Telegram channel access — approve pairings, edit allowlists, set DM/group policy. Use when the user asks to pair,"
-      },
-      {
-        "plugin": "telegram",
-        "slug": "telegram:configure",
-        "name": "configure",
-        "trigger": "Set up the Telegram channel — save the bot token and review access policy. Use when the user pastes a Telegram bot token"
+        "trigger": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy."
       },
       {
         "plugin": "webnovel-studio",

@@ -6,8 +6,19 @@
 
 ## 2026-08-04
 
+- **[Fix] 后半程技能触发概率下降** —— v3 拆掉 UserPromptSubmit/PostToolUse 执行期强制后，只剩入口期软提示，非入口/后半程 skill（root-cause、real-world-verify、github-collab 等）不触发
+  - 根因三连：(1) 锚点"没有匹配的 skill 就自己完成"= 放行跳过；(2) 5 类分类只覆盖入口、无阶段概念；(3) 注册表触发词被 120 字截断（real-world-verify 截在"确"、storage-analyzer 为字面 ">"）
+  - [Fix] 锚点改阶段感知：阶段3 bug→root-cause-analysis、子任务完成→integration-verify、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh；删除放行授权
+  - [Fix] registry-scan.sh：YAML 折叠块标量解析 + 去掉 120 字截断（trigger 存完整描述）
+  - 结果：inventory 39 项零截断零占位符；不加钩子，保持 v3 无仪式
+
+- **[Cleanup] 注册表严格化：仅扫已注册插件**
+  - 根因：registry-scan.sh 全量 os.walk plugins/ 根，把 marketplaces/ 克隆里 30 个从未安装的官方插件 SKILL.md 也扫进 inventory（66 项，多数不认识的技能）
+  - [Fix] 改为读 installed_plugins.json 的 installPath 逐项扫描；清理 categories 中 28 个死 slug / 5 个空分类
+  - 结果：inventory 66→39（myworkflow 22 / webnovel 9 / microsoft-docs 3 / large-project 2 / 其余 3），9 类 categories、25 slug、零死链
+
 - **[Build] v3.1 专项注册表 + 架构演进实现（细化方案 v2 全量落地）**
-  - 专项注册表：`hooks/registry-scan.sh` 扫描全插件生成 `config/special-skills.json`（inventory 自动 + categories 人工），SessionStart 自动刷新；`registry-maintain` skill 维护分类
+  - 专项注册表：`hooks/registry-scan.sh` 扫描已注册插件生成 `config/special-skills.json`（inventory 自动 + categories 人工），SessionStart 自动刷新；`registry-maintain` skill 维护分类
   - 分类 hook：session-init.sh 注入 5 类概念锚点（~200 字）；子智能体上下文反转注入一行协议锚点
   - 架构：bug-fix-verify 删除，修复并入 agent-dev-loop（发现 bug→root-cause 定位→修复→真实验证）；root-cause 426→98 行、agent-dev-loop 173→~100 行（方法密度优先，删模板）
   - 新专项：lessismore（行为准则）、storage-analyzer（卡兹克电脑清理适配，Windows 实测通过）、file-organize（电脑整理）
