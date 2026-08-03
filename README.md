@@ -155,6 +155,10 @@ myworkflow/
       references/persuasion-principles.md
 ```
 
+## 架构拓扑
+
+技能之间的连接结构（DAG 分层、编排铁三角、验证门禁、外部插件挂接）见 **`docs/architecture-topology.md`** —— 内含可渲染的 Mermaid 图与维护边表。改动任何技能引用后请同步该文件。
+
 ## 技术细节
 
 - **Hook**：单一 `SessionStart` 事件，在 `startup` 和 `clear|compact` 时触发，timeout 10s。

@@ -21,7 +21,8 @@ v3 扁平化重构（2026-08-02）已落地但文档未同步：`.claude-plugin/
 
 变更文件：
 - Modify: `.claude-plugin/plugin.json`、`README.md`、`PROGRESS.md`、`PROGRESS-LITE.md`（已 v3）
-- git commit: v3 扁平化重构全量
+- git commit: v3 扁平化重构全量（c9ebaa3，已 push）
+- Add: `docs/architecture-topology.md` — 技能连接拓扑（Mermaid 图 + 边表 + 维护指南）；README 增加「架构拓扑」入口
 
 ---
 
