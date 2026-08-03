@@ -1,6 +1,6 @@
 {
-  "_comment": "v2.2 设计：SessionStart 注入工作流指令 + UserPromptSubmit 关键词硬路由 + PostToolUse 执行期兜底。",
-  "description": "MyWorkflow — v2.2 六组 skills / 五分类运行时路由。三层防线：SessionStart 注入 | UserPromptSubmit 入口检测 | PostToolUse 执行期检查",
+  "_comment": "v3 扁平化：删除 UserPromptSubmit 硬路由与 PostToolUse 唠叨。仅保留 SessionStart 极简行为锚点（~70 字）。",
+  "description": "MyWorkflow — v3 扁平化：技能直接按描述触发，无分类仪式、无路由 hop",
   "hooks": {
     "SessionStart": [
       {
@@ -9,7 +9,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\"",
-            "timeout": 60
+            "timeout": 10
           }
         ]
       },
@@ -18,30 +18,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\" --reset",
-            "timeout": 60
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use.sh\"",
-            "timeout": 3
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\"",
+            "timeout": 10
           }
         ]
       }

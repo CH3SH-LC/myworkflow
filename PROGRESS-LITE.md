@@ -1,8 +1,19 @@
 ﻿# MyWorkflow — 开发进度速查
 
-> 最后更新：2026-07-27
+> 最后更新：2026-08-02
 
 ---
+
+## 2026-08-02
+
+- **[Refactor] v3 扁平化轻量重构（更换 deepseek-v4-flash 后全面瘦身）**
+  - [Diagnosis] 根因：22/27 SKILL.md 带 UTF-8 BOM → YAML frontmatter 解析失败 → 技能未注册 → `Skill("myworkflow:xxx")` 调用失败（router 失灵硬故障）；SessionStart 注入 16KB 五分类仪式 → 上下文耗尽 → 后半段放弃访问新 skill；三插件撞名（网文/大项目）→ 注册被丢弃；hook 脚本带 BOM → 间歇性失败
+  - [Fix] 全插件去 BOM：myworkflow 26 文件 + webnovel-studio 9 文件 + hook 脚本
+  - [Migration] 9 网文技能 + tools 迁出 myworkflow → webnovel-studio 成为唯一归属（去 BOM、路径自洽）
+  - [Refactor] 重型 hook 拆除：删 UserPromptSubmit 硬路由 + PostToolUse 唠叨；SessionStart 注入 16KB → ~70 字
+  - [Refactor] 19 技能瘦身 7642 → 3353 行（-56%）：保留全部功能门禁（多轮需求澄清、dev-loop 主线「需求→设计→开发→检测→自循环」、检测通过才能出循环、大项目维护全功能）；跨文件必须派发子智能体；P2 必须修复不留漏洞
+  - [Fix] plugin.json → v3.0.0，skills 数组补全（pdf-to-markdown/self-study-guide）
+  - ⚠️ 待办：需重启 Claude Code 生效（BOM 修复后技能才能注册）；git 变更未提交（34 文件，+1319/-11826）
 
 ## 2026-07-27
 

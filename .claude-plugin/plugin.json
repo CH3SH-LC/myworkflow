@@ -1,7 +1,7 @@
 {
   "name": "myworkflow",
-  "version": "2.1.0",
-  "description": "MyWorkflow — v2 六组 skills / 五分类运行时路由。提供完整的 AI 辅助开发工作流：代码编写、Bug修复、需求澄清、深度调研、文稿撰写、任务拆解派发、反谄媚行为准则。",
+  "version": "3.0.0",
+  "description": "MyWorkflow — v3 扁平化轻量：技能直接按描述触发，无分类仪式、无路由 hop。提供开发闭环、Bug修复、调研、润色等自包含技能。",
   "author": {
     "name": "Lenovo",
     "email": "user@localhost"

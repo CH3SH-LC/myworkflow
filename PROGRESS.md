@@ -1,9 +1,76 @@
 ﻿# MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-07-26（第十五阶段：Skill 触发可靠性四层加固）
+> 最后更新：2026-08-04（第十七阶段：v3 文档同步 + 加载实证）
 
 ---
+
+## 2026-08-04
+
+### [Sync] v3 文档同步 + 加载实证
+
+问题描述：
+v3 扁平化重构（2026-08-02）已落地但文档未同步：`.claude-plugin/plugin.json` 仍为 2.1.0、README 仍描述 v2 五分类体系、PROGRESS 尾部（文件结构/设计决策/下一步清单）仍是 v2 内容；`~/.claude/skills/` 三条 junction 丢失。
+
+验证与修复：
+- **[Verify] 加载实证**：本会话 19 技能全部注册、SessionStart hook 生效（注入 ~70 字行为锚点）——**确认 junction 非必要**。真实发现机制：`installed_plugins.json` + `enabledPlugins@local` → `plugins/<name>/`，与 memory「skills 清理与插件注册」结论一致。旧诊断（P0-2：必须靠 `~/.claude/skills/` 联结）正式废弃。
+- **[Fix] `.claude-plugin/plugin.json`**：2.1.0 → 3.0.0，description 同步 v3（与 root plugin.json 一致）
+- **[Fix] README.md 重写**：v2 五分类/16 技能 → v3 扁平化/19 技能/英文目录树/仅 SessionStart hook
+- **[Fix] PROGRESS.md 尾部对齐**：文件结构、核心设计决策、下一步清单更新为 v3；关闭「联结丢失根因调查」待办（机制已被替代）
+- **[Build] git 提交**：v3 全部变更（34 文件，+1379/-11828）入库
+
+变更文件：
+- Modify: `.claude-plugin/plugin.json`、`README.md`、`PROGRESS.md`、`PROGRESS-LITE.md`（已 v3）
+- git commit: v3 扁平化重构全量
+
+---
+
+## 2026-08-02
+
+### [Refactor] v3 扁平化轻量重构（模型更换后全面瘦身）
+
+问题描述：
+用户更换模型为 deepseek-v4-flash 后反馈：技能在 /skills 可见但真实工作中难以被调用，工作后半段不再访问新 skill，router 入口时不时失灵，要求轻量、简洁、高效。
+
+根因诊断：
+- **RC1（主要，router 失灵硬故障）**：27 个 SKILL.md 中 22 个带 UTF-8 BOM（`efbbbf`），YAML frontmatter 解析失败 → 技能未注册为可调用 skill。用户看到的 /skills 列表是 session-init.sh 文字注入的假象；实际 `Skill("myworkflow:task-router")` 等调用全部失败。注册成功的 5 个技能恰好是唯一无 BOM 的 5 个（相关性 100%）
+- **RC2（后半段放弃）**：SessionStart 注入 16KB 五分类仪式指令（clear/compact 还重复注入），要求"分类→2-5 轮提问→结构化报告→确认→执行"，模型做 2-3 次即放弃
+- **RC3（撞名丢注册）**：myworkflow 与 webnovel-studio 重复提供 9 个网文技能、与 large-project-work 重复提供大项目初始化/维护 → 注册时被丢弃
+- **RC4（间歇失败）**：三个 hook 脚本均带 UTF-8 BOM，bash 识别不了被 BOM 污染的 shebang → 间歇性静默失败
+- **RC5（臃肿）**：单技能最大 root-cause-analysis 1199 行，加载一次烧掉大量上下文
+
+修复内容：
+
+**F1: BOM 全清除**
+- myworkflow 26 个文件（SKILL.md + hook 脚本）去 BOM；webnovel-studio 9 个文件去 BOM
+- 效果：技能从"只出现在文字清单"→ 真正注册可调用
+
+**F2: 网文技能迁移**
+- 9 个网文技能 + tools/chapter_check.py 从 myworkflow 迁出 → webnovel-studio 成为唯一归属（webnovel 版引用已自洽、路径指向自身）
+
+**F3: 重型 hook 拆除**
+- 删除 UserPromptSubmit 关键词硬路由 + PostToolUse 执行期唠叨
+- SessionStart 注入重写：16KB → ~70 字（"直接调匹配 skill，最多澄清 1 个关键问题"）
+- 删除废弃的 .cache 注入缓存
+
+**F4: 19 技能瘦身（保留全部功能门禁）**
+- 总行数 7642 → 3353（-56%）；全部保留：多轮需求澄清（req-clarify 逐轮提问能力）、dev-loop 主线「需求→设计→开发→检测→自循环」、检测通过才能出循环、大项目维护全功能、root-cause 6 阶段方法、TDD、真实验证门禁
+- 全局调整（用户确认）：简单=快速通道；标准=完整流程；跨文件=必须派发子智能体；P2 必须修复不留漏洞
+- 清除：反绕过红旗清单表、与 description 重复的触发长篇、必需要素/推荐要素、ASCII 示意图、常见错误/危险信号/快速参考表
+
+**F5: plugin.json 更新**
+- v2.1.0 → v3.0.0；skills 数组补全（pdf-to-markdown、self-study-guide）
+
+变更文件：
+- Modify: 19 个 `skills/*/SKILL.md` — F4 瘦身
+- Delete: 9 个网文技能目录（人物设计/大纲设计/本书个性化设计/章节审查/整体架构/写前审查/明确设定/全书一致性审查/具体写作）+ `skills/tools/` — F2 迁移
+- Modify: `hooks/hooks.json`、`hooks/session-init.sh` — F3
+- Delete: `hooks/user-prompt-submit.sh`、`hooks/post-tool-use.sh` — F3
+- Delete: `.cache/` — F3
+- Modify: `plugin.json` — F5
+- Modify: `PROGRESS-LITE.md`、`PROGRESS.md` — 本文档
+
+⚠️ 待办：重启 Claude Code 生效；git 变更未提交（34 文件，+1319/-11826）；webnovel-studio 加载验证
 
 ## 2026-07-26
 
@@ -556,67 +623,66 @@ myworkflow 技能包经过 5 个阶段的快速迭代（v1→v2 重构、依赖�
 - Description 铁律统一执行（全部 16 个 skill description 精简为纯触发条件）
 - 六组/五分类术语在全部文档中统一
 
-## 当前文件结构
+## 当前文件结构（v3）
 
 ```
 C:\Users\Lenovo\.claude\plugins\myworkflow\
+  plugin.json                              (marketplace 发布清单，v3.0.0)
+  .claude-plugin/plugin.json               (运行时发现元数据，v3.0.0)
   README.md
   PROGRESS.md                              ← 本文件
   PROGRESS-LITE.md
   hooks/
-    hooks.json                             (v2.2: SessionStart + UserPromptSubmit + PostToolUse 三层防线)
-    session-init.sh                        (v2.2: 五分类注入 + 强制化 Skill() 调用 + 编码修复)
-    user-prompt-submit.sh                  (v2.2: 关键词硬路由，增强覆盖)
-    post-tool-use.sh                       (v2.2: 新增——执行期兜底检查)
-  skills/                                  (28 个 skills, 6 个 references/)
-    ── 入口 (1) ──
-    任务分类入口/SKILL.md                   (v2: 三步工作流 + 反绕过红旗清单)
-    ── 代码编写 (6) ──
-    智能体闭环开发/SKILL.md                 (含 TDD 微循环 + 反驳表 + 回归 TDD 验证)
-      references/testing-anti-patterns.md   (5 反模式 + Mock 铁律)
-    Bug修复与验证/SKILL.md                  (v2: 五步编排 + 轻量分析例外)
-    大项目初始化/SKILL.md
-    大项目工作维护/SKILL.md                 (并行关系修正 + git 单commit 过滤)
-    根因定位与全面排查/SKILL.md             (6 阶段 + 5 项技术 + 防御纵深四层模型)
-      references/condition-based-waiting.md (条件轮询替代盲等)
-      references/defense-in-depth.md        (四层防御框架)
-    Github协作/SKILL.md
-    ── 文稿撰写 (1) ──
-    humanizer-zh/SKILL.md
-    ── 深度调研 (1) ──
-    深度调研/SKILL.md
-    ── 辅助写技能 (1) ──
-    辅助写技能/SKILL.md                     (TDD 方法 + 验证方法论 + 说服原则)
-      references/persuasion-principles.md   (7 说服原则)
-    ── 通用技能 (6) ──
-    需求澄清/SKILL.md                       (v3: YAGNI+多子系统检测+自检清单+落盘失败处理)
-    任务拆解与派发/SKILL.md                 (独立步骤定义 + 派发失败降级)
-    子智能体执行协议/SKILL.md               (DONE_WITH_CONCERNS 四种状态)
-    集成验证与修正/SKILL.md                 (Per-task+全分支审查+状态路由+审查独立性)
-    轻量级派发/SKILL.md                     (description 精简)
-    反谄媚/SKILL.md                         (安全漏洞红线 🔴)
-  docs/
-    工作流设计-v2-五分类体系.md
-    11问题综合分析报告.md                   ← 核心参考文档
-    + 3 份调研文档
+    hooks.json                             (v3: 仅 SessionStart，startup + clear|compact，timeout 10s)
+    session-init.sh                        (v3: ~70 字行为锚点注入，子智能体环境跳过)
+  skills/                                  (19 个 skills, 3 个 references/)
+    ── 代码开发 (7) ──
+    agent-dev-loop/SKILL.md                (智能体闭环开发：需求→计划→TDD→真实验证→循环)
+      references/testing-anti-patterns.md  (5 反模式 + Mock 铁律)
+    bug-fix-verify/SKILL.md                (Bug修复与验证：五步闭环)
+    root-cause-analysis/SKILL.md           (根因定位与全面排查：6 阶段 + 5 项专项技术)
+      references/condition-based-waiting.md
+      references/defense-in-depth.md
+    real-world-verify/SKILL.md             (真实验证：强制门禁，像用户一样使用产品)
+    project-init/SKILL.md                  (大项目初始化：四文件体系)
+    project-maintain/SKILL.md              (大项目工作维护)
+    github-collab/SKILL.md                 (Github协作：隔离→提交→PR→审查→合并)
+    ── 调研/文稿/学习 (4) ──
+    deep-research/SKILL.md                 (深度调研：多源搜索 + 强制 .md 落盘)
+    humanizer-zh/SKILL.md                  (中文 AI 痕迹清除)
+    pdf-to-markdown/SKILL.md               (扫描 PDF OCR → Markdown/LaTeX)
+    self-study-guide/SKILL.md              (STEM 学习讲义)
+    ── 任务编排 (6) ──
+    task-router/SKILL.md                   (任务分类入口：扁平化路由表)
+    task-dispatch/SKILL.md                 (任务拆解与派发)
+    lightweight-dispatch/SKILL.md          (轻量级派发)
+    subagent-protocol/SKILL.md             (子智能体执行协议)
+    integration-verify/SKILL.md            (集成验证与修正)
+    req-clarify/SKILL.md                   (需求澄清)
+    ── 行为准则/辅助 (2) ──
+    anti-sycophancy/SKILL.md               (反谄媚)
+    skill-authoring/SKILL.md               (辅助写技能)
+      references/persuasion-principles.md
 ```
+
+> 注：9 个网文技能 + tools/chapter_check.py 已于 v3 迁出至 webnovel-studio 插件；UserPromptSubmit / PostToolUse hook 已于 v3 删除。
 
 ---
 
-## 核心设计决策（截至 2026-07-26）
+## 核心设计决策（截至 2026-08-04）
 
 | # | 决策 | 理由 |
 |---|------|------|
-| 1 | **六组 skills（运行时五分类路由）** | 组织维度六组：入口 / 代码编写 / 文稿撰写 / 深度调研 / 辅助写技能 / 通用技能；运行时路由五分类 |
-| 2 | **三层防线 Hook 体系** | SessionStart 注入 + UserPromptSubmit 硬路由 + PostToolUse 执行期兜底（v2.2 新增第三层） |
-| 3 | **三步工作流** | 分类 → 需求澄清 → 按类型执行 |
-| 4 | **统一 myworkflow: 前缀** | 所有 Skill() 调用使用 `myworkflow:` 命名空间前缀，消除裸名/前缀名不一致 |
-| 5 | **Skill() 调用强制化** | 注入指令中 `Skill("name")` 不再作为描述文字，而是显式标注为「使用 Skill 工具调用」|
-| 6 | **响应前自检清单** | 每次输出代码/文件修改前强制回答 3 问（是否调了 Skill？是否跳过澄清？是否真的用了工具？） |
-| 7 | **不集成 writing-plans** | 闭环开发+任务拆解已天生拆解并行，writing-plans 过于啰嗦 |
-| 8 | **Bug 拆为两个 skill** | 排查（只找不修）+ 修复（引导细节→找 bug→并行修→循环） |
-| 9 | **测试融合** | TDD（微观测）→ 真实验证（宏观测），两步都需要 |
-| 10 | **大项目工作维护覆盖跨会话** | 四文件体系实时同步，不需要额外的 state.json |
+| 1 | **扁平化：技能按 description 直接触发** | 消除分类仪式与路由 hop，降低模型使用门槛（v3 核心变更，替代五分类路由） |
+| 2 | **单一 SessionStart hook，注入 ~70 字** | 每次会话极简行为锚点，不烧上下文；UserPromptSubmit/PostToolUse 已删（v3） |
+| 3 | **统一 myworkflow: 前缀** | 所有 Skill() 调用使用 `myworkflow:` 命名空间前缀，消除裸名/前缀名不一致 |
+| 4 | **Description 铁律** | description 只写"何时触发"，不写"技能做什么" |
+| 5 | **TDD + 真实验证双保险** | TDD 保代码正确性，真实验证保用户体验，两步都需要 |
+| 6 | **跨文件必须派发子智能体** | 单上下文做不了多文件协作，合约化派发保接口一致 |
+| 7 | **Bug 拆为两个 skill** | 排查（只找不修）+ 修复（引导细节→找 bug→并行修→循环） |
+| 8 | **反谄媚内建** | AI 应对用户保持健康怀疑，技术诚实优先于迎合 |
+| 9 | **P2 必须修复不留漏洞** | 任何一级问题都是漏洞，不允许带病出循环 |
+| 10 | **自含技能，无撞名** | 网文/大项目技能迁出，避免多插件注册被丢弃（v3） |
 | 11 | **Github协作原生替代** | 5 场景闭环（隔离→提交→PR→审查→合并），替代 superpowers 的 3 个 git skills |
 | 12 | **辅助写技能用 TDD 方法** | 写 skill = 文档的 TDD：基线观察→最小起草→堵漏洞→审查清单 |
 
@@ -648,12 +714,12 @@ C:\Users\Lenovo\.claude\plugins\myworkflow\
 
 - [ ] **writing-skills + skill-creator 评估**：辅助写技能已建，后续可用它来检验 myworkflow 自身 skills
 - [ ] **端到端联调测试**
-- [ ] **联结丢失根因调查**：`~/.claude/skills/` junctions 第三次丢失，需调查 Windows 下为何反复消失（记录在 `memory/junction-rebuild-deferred.md`）
+- [x] **联结丢失根因调查**（2026-08-04 关闭）— junction 机制已被 `installed_plugins.json` + `enabledPlugins@local` 替代，技能无需 `~/.claude/skills/` 联结即可加载（本会话实证）
 
-### P4（已完成，待验证）
+### P4（v3 已收编/验证）
 
-- [x] **Skill 触发可靠性四层加固**（2026-07-26）— ⚠️ 需重启 session 后验证新注入 + PostToolUse hook
-  - F3: 编码修复 ✅ | F1: 注入重写 ✅ | F2: PostToolUse hook ✅ | F5: 关键词增强 ✅
+- [x] **Skill 触发可靠性四层加固**（2026-07-26）— 已被 v3 扁平化吸收：UserPromptSubmit/PostToolUse hook 删除，SessionStart 极简注入（本会话已验证生效）
+  - F3: 编码修复 ✅ | F1: 注入重写 ✅ | F2: PostToolUse hook（v3 已删）| F5: 关键词增强（v3 已删）
 
 ---
 
@@ -662,7 +728,7 @@ C:\Users\Lenovo\.claude\plugins\myworkflow\
 - [x] Git 协作方案选哪个？→ 选 A，新建「Github协作」skill（2026-07-13）
 - [x] superpowers 复刻的 10 个 skills 全部删除（2026-07-13），能力已吸收
 - [x] Skill 触发困难根因诊断 + 四层加固修复（2026-07-26）
-- [ ] Windows 下 Git Bash 路径是否一致？→ 新 session 验证
-- [ ] DeepSeek 环境下新注入指令 + PostToolUse hook 是否有效？→ 新 session 验证
-- [ ] PostToolUse hook 的 JSON 解析（grep-based）在所有工具调用下是否正常？→ 新 session 验证
-- [ ] `~/.claude/skills/` 联结丢失根因 → 记录在 memory，待调查
+- [x] Windows 下 Git Bash 路径是否一致？→ v3 简化后无需路径依赖（2026-08-04）
+- [x] DeepSeek 环境下新注入指令是否有效？→ 本会话实证生效（2026-08-04）
+- [x] PostToolUse hook 相关问题 → v3 已删除该 hook，不再适用（2026-08-04）
+- [x] `~/.claude/skills/` 联结丢失根因 → 已确认非必要：发现走 installed_plugins.json + enabledPlugins@local（2026-08-04）
