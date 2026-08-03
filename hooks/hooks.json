@@ -1,6 +1,6 @@
 {
-  "_comment": "v3 扁平化：删除 UserPromptSubmit 硬路由与 PostToolUse 唠叨。仅保留 SessionStart 极简行为锚点（~70 字）。",
-  "description": "MyWorkflow — v3 扁平化：技能直接按描述触发，无分类仪式、无路由 hop",
+  "_comment": "v3.1：SessionStart 注入分类概念锚点 + 注册表自动刷新；子智能体上下文注入一行协议锚点",
+  "description": "MyWorkflow — v3.1 扁平化 + 分类概念锚点 + 专项注册表",
   "hooks": {
     "SessionStart": [
       {
@@ -9,7 +9,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\"",
-            "timeout": 10
+            "timeout": 15
           }
         ]
       },
@@ -19,7 +19,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-init.sh\"",
-            "timeout": 10
+            "timeout": 15
           }
         ]
       }

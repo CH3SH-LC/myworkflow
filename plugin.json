@@ -11,7 +11,7 @@
   "skills": [
     "skills/task-router",
     "skills/agent-dev-loop",
-    "skills/bug-fix-verify",
+    "skills/registry-maintain",
     "skills/project-init",
     "skills/project-maintain",
     "skills/root-cause-analysis",
@@ -25,8 +25,11 @@
     "skills/integration-verify",
     "skills/lightweight-dispatch",
     "skills/pdf-to-markdown",
+    "skills/storage-analyzer",
+    "skills/file-organize",
     "skills/self-study-guide",
     "skills/anti-sycophancy",
+    "skills/lessismore",
     "skills/real-world-verify"
   ],
   "keywords": [

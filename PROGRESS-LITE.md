@@ -1,8 +1,17 @@
 ﻿# MyWorkflow — 开发进度速查
 
-> 最后更新：2026-08-02
+> 最后更新：2026-08-04
 
 ---
+
+## 2026-08-04
+
+- **[Build] v3.1 专项注册表 + 架构演进实现（细化方案 v2 全量落地）**
+  - 专项注册表：`hooks/registry-scan.sh` 扫描全插件生成 `config/special-skills.json`（inventory 自动 + categories 人工），SessionStart 自动刷新；`registry-maintain` skill 维护分类
+  - 分类 hook：session-init.sh 注入 5 类概念锚点（~200 字）；子智能体上下文反转注入一行协议锚点
+  - 架构：bug-fix-verify 删除，修复并入 agent-dev-loop（发现 bug→root-cause 定位→修复→真实验证）；root-cause 426→98 行、agent-dev-loop 173→~100 行（方法密度优先，删模板）
+  - 新专项：lessismore（行为准则）、storage-analyzer（卡兹克电脑清理适配，Windows 实测通过）、file-organize（电脑整理）
+  - task-router 压至极简速查（14 行）；注册表 66 技能 / 22 myworkflow 技能 / 零死链 / JSON 全合法
 
 ## 2026-08-02
 

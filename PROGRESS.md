@@ -1,11 +1,45 @@
 ﻿# MyWorkflow — 开发进度
 
 > 开始日期：2026-07-11
-> 最后更新：2026-08-04（第十七阶段：v3 文档同步 + 加载实证）
+> 最后更新：2026-08-04（第十八阶段：v3.1 专项注册表 + 架构演进实现）
 
 ---
 
-## 2026-08-04
+## 2026-08-04（第十八阶段：v3.1 专项注册表 + 架构演进实现）
+
+### [Build] 细化方案 v2 全量落地（docs/refined-architecture.md 的 P0/P1/P2）
+
+**P0 —— 专项注册表体系**
+- **T1** `hooks/registry-scan.sh`：扫描全部本地插件技能（兼容 plugins/、cache/、marketplaces/ 三种目录结构），生成 `config/special-skills.json` 的 inventory 段；新建 `registry-maintain` 维护 skill（categories 人工维护）
+- **T2** 分类 hook：`session-init.sh` 注入 5 类概念锚点 + 专项查询指引（~200 字）
+- **T3** task-router 压至极简速查（101→14 行）
+- **T4** 注册表自动刷新：SessionStart 全量扫描（移除 mtime 快速路径——其会因手工编辑 categories 而漏刷新 inventory）
+
+**P1 —— 架构合并 + 方法优化**
+- **T5** 子智能体协议 hook 注入：`session-init.sh` 反转——子智能体上下文注入一行协议锚点（不再跳过）
+- **T6** bug-fix-verify 吸收进 agent-dev-loop：删除独立 skill；agent-dev-loop 增加「发现 bug→root-cause 定位→修复→真实验证」路径；同步 8 处引用（real-world-verify/github-collab/req-clarify/plugin.json/README/PROGRESS/拓扑）
+- **T7** root-cause 方法优化：426→98 行（5 Whys/数据流逆向/假设-验证/五项专项技术全保留，删模板与展开例子）
+- **T8** agent-dev-loop 优化：173→~100 行（保留五阶段 gate，删复杂度门控表/模板/TDD 展开/审计细节压缩）
+
+**P2 —— 独立专项**
+- **T10** `lessismore`：AI 思考与协作"少即是多"行为准则（新建，短而精）
+- **T11** `storage-analyzer`：拉取卡兹克 [khazix-skills/storage-analyzer](https://github.com/KKKKhazix/khazix-skills)，转 myworkflow 格式，注册进「电脑任务」类；**Windows 11 实测通过**（检测 2 磁盘 / 8 分组 / 详细大小清单）
+- **T12** `file-organize`：电脑整理 skill（参考 D:\CH3SH 编号分类组织方式，移动需确认）
+
+**验证**
+- 全仓一致性：22 技能、Skill() 引用零死链、4 个 JSON 合法、2 个 hook 脚本 bash -n + 实际运行通过
+- 注册表：66 技能 inventory（14 类 categories 保留）、root-cause trigger 已刷新
+- Windows 实测：storage-analyzer `scan.py` 成功产出扫描 JSON
+
+**变更文件**
+- Add: `hooks/registry-scan.sh`、`skills/registry-maintain`、`skills/lessismore`、`skills/storage-analyzer`（含 scripts/assets/references）、`skills/file-organize`、`config/special-skills.json`
+- Modify: `hooks/session-init.sh`、`hooks/hooks.json`、`plugin.json`、`skills/task-router`、`skills/agent-dev-loop`、`skills/root-cause-analysis`、`skills/real-world-verify`、`skills/github-collab`、`skills/req-clarify`、`README.md`、`docs/architecture-topology.md`、`PROGRESS.md`、`PROGRESS-LITE.md`
+- Delete: `skills/bug-fix-verify/`
+- git: `docs/my-architecture.md` 纳入版本管理
+
+---
+
+## 2026-08-04（第十七阶段）
 
 ### [Sync] v3 文档同步 + 加载实证
 
@@ -635,14 +669,17 @@ C:\Users\Lenovo\.claude\plugins\myworkflow\
   PROGRESS.md                              ← 本文件
   PROGRESS-LITE.md
   hooks/
-    hooks.json                             (v3: 仅 SessionStart，startup + clear|compact，timeout 10s)
-    session-init.sh                        (v3: ~70 字行为锚点注入，子智能体环境跳过)
+    hooks.json                             (v3.1: 仅 SessionStart，startup + clear|compact，timeout 15s)
+    session-init.sh                        (v3.1: 分类概念锚点 + 注册表刷新；子智能体注入协议锚点)
+    registry-scan.sh                       (专项注册表扫描生成器)
+  config/
+    special-skills.json                    (专项注册表：categories 人工 + inventory 自动)
   skills/                                  (19 个 skills, 3 个 references/)
     ── 代码开发 (7) ──
-    agent-dev-loop/SKILL.md                (智能体闭环开发：需求→计划→TDD→真实验证→循环)
+    agent-dev-loop/SKILL.md                (智能体闭环开发：需求→计划→TDD→真实验证→循环；含 bug 修复路径)
       references/testing-anti-patterns.md  (5 反模式 + Mock 铁律)
-    bug-fix-verify/SKILL.md                (Bug修复与验证：五步闭环)
-    root-cause-analysis/SKILL.md           (根因定位与全面排查：6 阶段 + 5 项专项技术)
+    registry-maintain/SKILL.md             (专项注册表维护：登记/整理 config/special-skills.json)
+    root-cause-analysis/SKILL.md           (根因定位与全面排查：5 Whys + 5 项专项技术)
       references/condition-based-waiting.md
       references/defense-in-depth.md
     real-world-verify/SKILL.md             (真实验证：强制门禁，像用户一样使用产品)

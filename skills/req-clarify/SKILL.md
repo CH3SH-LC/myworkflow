@@ -108,7 +108,7 @@ allowed-tools:
 
 ### 阶段 10：返回调用方
 
-返回时显式带上报告文件完整路径。**谁调用就返回给谁**：task-router 调用→回路由步骤 3；agent-dev-loop 调用→回其阶段 2；bug-fix-verify 调用→回修复流程；其他→回对应 skill。
+返回时显式带上报告文件完整路径。**谁调用就返回给谁**：task-router 调用→回路由步骤 3；agent-dev-loop 调用→回其阶段 2；其他→回对应 skill。
 
 ## 完成标志
 
