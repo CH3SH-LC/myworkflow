@@ -1,8 +1,8 @@
 {
   "_comment": "此文件用于 marketplace 发布清单。运行时插件发现由 .claude-plugin/plugin.json 负责（hooks 和 skills 通过目录结构自动发现）。",
   "name": "myworkflow",
-  "version": "4.0.0",
-  "description": "MyWorkflow — v4：扁平化 + 阶段感知锚点 + 专项注册表。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
+  "version": "5.0.0",
+  "description": "MyWorkflow — v5：hook 路由入口 + 5 类任务 + 项目文档体系。代码走 agent-dev-loop，文稿走 write-prose/polish-prose，调研走 deep-research，专项查注册表。独立专项技能已迁至 myworkflow-extra。",
   "author": "Lenovo",
   "license": "MIT",
   "hooks": {
@@ -11,26 +11,22 @@
   "skills": [
     "skills/task-router",
     "skills/agent-dev-loop",
-    "skills/registry-maintain",
+    "skills/write-prose",
+    "skills/polish-prose",
+    "skills/deep-research",
+    "skills/root-cause-analysis",
+    "skills/real-world-verify",
+    "skills/github-collab",
     "skills/project-init",
     "skills/project-maintain",
-    "skills/root-cause-analysis",
-    "skills/github-collab",
-    "skills/humanizer-zh",
-    "skills/deep-research",
-    "skills/skill-authoring",
+    "skills/registry-maintain",
     "skills/req-clarify",
-    "skills/task-dispatch",
-    "skills/subagent-protocol",
-    "skills/integration-verify",
-    "skills/lightweight-dispatch",
-    "skills/pdf-to-markdown",
-    "skills/storage-analyzer",
-    "skills/file-organize",
-    "skills/self-study-guide",
     "skills/anti-sycophancy",
     "skills/lessismore",
-    "skills/real-world-verify"
+    "skills/task-dispatch",
+    "skills/lightweight-dispatch",
+    "skills/subagent-protocol",
+    "skills/integration-verify"
   ],
   "keywords": [
     "workflow",
@@ -40,6 +36,6 @@
     "task-orchestration",
     "chinese",
     "deep-research",
-    "skill-authoring"
+    "project-management"
   ]
 }

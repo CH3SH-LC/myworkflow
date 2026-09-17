@@ -1,6 +1,8 @@
 ---
 name: lessismore
 description: Use when 需要以"少即是多"的方式思考与协作时触发——回答过长、方案过度设计、输出冗余、或需要克制时。触发词：少即是多、简洁一点、精简、less is more、别写太多、克制一点。本 skill 是行为准则，横切不绑定具体任务。
+allowed-tools:
+  - Read
 ---
 
 # Less is More — AI 如何思考与协作

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# MyWorkflow v4 — SessionStart 注入
-# 主智能体：阶段感知锚点（分类概念 + 阶段→skill 链）+ 注册表自动刷新
+# MyWorkflow v5 — SessionStart 注入
+# 主智能体：路由锚点（5 类任务→skill + 开发阶段链）+ 注册表自动刷新
 # 子智能体：一行协议锚点（不扫描注册表）
 set -uo pipefail
 
@@ -12,8 +12,10 @@ if [ -n "${CLAUDE_AGENT_TASK_ID:-}" ] || [ -n "${AGENT_MODE:-}" ] || [ -n "${SUB
   exit 0
 fi
 
-# 主智能体：注册表自动刷新（幂等、失败静默；~1s，保证 inventory 新鲜）
-bash "$PLUGIN_ROOT/hooks/registry-scan.sh" >/dev/null 2>&1 || true
+# 主智能体：注册表自动刷新（幂等，~1s，保证 inventory 新鲜）
+# stdout 必须丢弃——hook 的 stdout 只能是下面那一行合法 JSON。
+# stderr 不重定向：刷新失败（如注册表损坏）时让错误浮到 hook 的 stderr，否则会静默无感。
+bash "$PLUGIN_ROOT/hooks/registry-scan.sh" >/dev/null || true
 
-# 主智能体：分类概念锚点
-printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"直接按用户请求调用匹配的 Skill 完成工作——命中即调用，不跳过、不自作主张完成。任务分 5 类：代码编写 / 文稿撰写 / 深度调研 / 专项任务 / 简单问答；疑似专项任务时，查 myworkflow 插件的 config/special-skills.json 找对应 skill。开发类任务全程按阶段调 skill：阶段3 遇 bug → myworkflow:root-cause-analysis；子任务产出完成 → myworkflow:integration-verify；阶段4 真实验证 → myworkflow:real-world-verify；提交远程 → myworkflow:github-collab；润色文本 → myworkflow:humanizer-zh。最多澄清 1 个关键问题。"}}\n'
+# 主智能体：路由锚点 + 阶段链（v5）
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"直接按用户请求调用匹配的 Skill 完成工作——命中即调用，不跳过、不自作主张完成。任务分 5 类：代码 → agent-dev-loop；文稿 → 从零写作 write-prose，润色改写 polish-prose；调研 → deep-research；专项 → 查 myworkflow 插件的 config/special-skills.json（含 myworkflow-extra 下的专项技能）；简单问答 → 直接回答。技能统一 myworkflow: 前缀。开发类任务按阶段调 skill：项目有 docs/GOAL.md → 先调 project-maintain 定位 design 点；阶段3 遇 bug → root-cause-analysis；子任务完成 → integration-verify；阶段4 验证 → real-world-verify；提交 → github-collab；收尾同步文档 → project-maintain。最多澄清 1 个关键问题。"}}\n'

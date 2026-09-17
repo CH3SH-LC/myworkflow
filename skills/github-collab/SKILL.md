@@ -26,7 +26,7 @@ allowed-tools:
 ## 设计决策
 
 - **worktree 隔离**：功能开发/bug 修复在独立 worktree 中进行，完成后合并回主分支。
-- **PR 驱动**：永远通过 PR 合入（不直接 push 到 main/master）。
+- **PR 驱动**：永远通过 PR 合入（不直接 push 到 main）。
 - **审查前置**：合并前必须通过 code review（自动化 + 人工）。
 - **清理闭环**：合并后清理 worktree 和临时分支，不留垃圾。
 
@@ -43,7 +43,9 @@ git worktree add -b feature/<feature-name> ../<worktree-dir> origin/main
 git checkout -b feature/<feature-name> origin/main
 ```
 
-**2. 确认就绪**：分支从最新 main/master 创建；工作目录已切换到新分支；项目能正常构建/运行。
+> 本文统一以 `main` 为默认分支名；若项目默认分支是 `master`，把文中出现的 `main` 全部替换为 `master`。
+
+**2. 确认就绪**：分支从最新 main 创建；工作目录已切换到新分支；项目能正常构建/运行。
 
 ### 场景 B：提交变更
 
@@ -63,7 +65,7 @@ git checkout -b feature/<feature-name> origin/main
 <type>(<scope>): <subject>   # 一句话概述，≤50 字符，中文
 <body>                        # 做了什么、为什么；每行 ≤72 字符
 ```
-type：`feat` 新功能 / `fix` Bug 修复 / `refactor` 重构（不改变行为）/ `docs` 文档 / `test` 测试 / `chore` 构建/工具/依赖。结尾加 `Co-Authored-By: Claude <noreply@anthropic.com>`。
+type：`feat` 新功能 / `fix` Bug 修复 / `refactor` 重构（不改变行为）/ `docs` 文档 / `test` 测试 / `chore` 构建/工具/依赖。结尾加 `Co-Authored-By: Claude Code <noreply@anthropic.com>`。
 
 **4. 提交并推送**（PowerShell 环境用 `@'...'@` here-string 替代 bash heredoc）：
 ```bash
@@ -92,14 +94,14 @@ git push -u origin feature/<feature-name>
 
 ---
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
-（可通过项目 CLAUDE.md 的 `pr-footer` 配置自定义或移除）
+（页脚为固定格式，随 PR 描述一并提交）
 ```
 
 **2. 创建 PR**：
 ```bash
-gh pr create --title "<type>: <简短描述>" --body @<pr-body-file> --base main --head feature/<feature-name>
+gh pr create --title "<type>: <简短描述>" --body-file <pr-body-file> --base main --head feature/<feature-name>
 ```
-常用 flag：`--draft`（标记还需改）/ `--reviewer <username>` / body 含 `Closes #123` 关联 issue / 不加 `--body` 则打开浏览器手填。
+常用 flag：`--draft`（标记还需改）/ `--reviewer <username>` / body 含 `Closes #123` 关联 issue / 不加 `--body-file` 则打开浏览器手填。
 
 **3. 确认就绪**：PR 标题清晰；描述含验证方式与回归检查；CI 全部通过；CI 未过 → 修复后 `git push` 会自动更新 PR。
 

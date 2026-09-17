@@ -201,6 +201,8 @@ tasks:
 然后严格按 5 阶段协议工作：阶段 1：读取合约+确认输入。先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，逐一读取 inputs 中的文件路径。阶段 2-5 声明接口→产出实现→自检→完成报告。
 ```
 
+> **一致性约束**：本模板与 `skills/subagent-protocol/SKILL.md`「主智能体强制引用」小节中的同名模板必须**逐字一致**，修改其一时必须同步另一处。（用 slug `myworkflow:subagent-protocol` 而非中文显示名——技能寻址走目录名，中文名不参与寻址，写 slug 才能稳定触发。）
+
 **派发失败降级**：单次 Agent 调用失败 → 重试 1 次（间隔 5 秒）；仍失败 → 该任务降级为串行由主智能体直接执行；主智能体也无法执行 → 报告用户并列出未派发任务列表。
 
 ## 后置更新步骤

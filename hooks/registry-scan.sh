@@ -91,14 +91,24 @@ for entry_key, entries in registry.get('plugins', {}).items():
 
 skills.sort(key=lambda s: (s["plugin"], s["slug"]))
 
+# categories 由人工维护（registry-maintain skill），本脚本在任何情况下都不得把它清空。
+# 旧的 `except: pass` 会在文件损坏时静默把 categories 写成空对象——人工整理的分类不可恢复。
+# 因此这里的原则是：读不出旧文件 = 无法保证不丢数据 = 中止，宁可不刷新也不覆盖。
 data = {"version": 1, "categories": {}}
 if os.path.exists(out_file):
     try:
         with open(out_file, encoding='utf-8') as fh:
             old = json.load(fh)
-        data["categories"] = old.get("categories", {})
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"registry-scan: 中止——无法解析 {out_file}（{exc}）。"
+              f"categories 是人工维护数据，宁可保留旧文件也不覆盖。请修复后重试。",
+              file=sys.stderr)
+        sys.exit(2)
+    if not isinstance(old, dict) or not isinstance(old.get("categories"), dict):
+        print(f"registry-scan: 中止——{out_file} 的 categories 字段缺失或类型错误，"
+              f"拒绝覆盖。请修复后重试。", file=sys.stderr)
+        sys.exit(2)
+    data["categories"] = old["categories"]
 
 data["inventory"] = {
     "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -106,8 +116,16 @@ data["inventory"] = {
     "skills": skills,
 }
 
-os.makedirs(os.path.dirname(out_file), exist_ok=True)
-with open(out_file, 'w', encoding='utf-8') as fh:
+out_dir = os.path.dirname(out_file)
+if out_dir:
+    os.makedirs(out_dir, exist_ok=True)
+# 原子写：先落临时文件再 os.replace。直接覆盖时若中途中断会留下截断的 JSON，
+# 而截断的 JSON 会让下一次运行读到损坏文件（旧版本正是这样丢 categories 的）。
+tmp_file = out_file + ".tmp"
+with open(tmp_file, 'w', encoding='utf-8') as fh:
     json.dump(data, fh, ensure_ascii=False, indent=2)
+    fh.flush()
+    os.fsync(fh.fileno())
+os.replace(tmp_file, out_file)
 print(f"registry-scan: {len(skills)} skills -> {out_file}")
 PYEOF

@@ -1,13 +1,21 @@
 {
   "version": 1,
   "categories": {
+    "文稿写作": [
+      "myworkflow:write-prose",
+      "myworkflow:polish-prose"
+    ],
     "学习任务": [
-      "myworkflow:pdf-to-markdown",
-      "myworkflow:self-study-guide"
+      "myworkflow-extra:pdf-to-markdown",
+      "myworkflow-extra:self-study-guide"
     ],
     "电脑任务": [
-      "myworkflow:storage-analyzer",
-      "myworkflow:file-organize"
+      "myworkflow-extra:storage-analyzer",
+      "myworkflow-extra:file-organize"
+    ],
+    "项目管理": [
+      "myworkflow:project-init",
+      "myworkflow:project-maintain"
     ],
     "网文写作": [
       "webnovel-studio:人物设计",
@@ -20,12 +28,6 @@
       "webnovel-studio:全书一致性审查",
       "webnovel-studio:具体写作"
     ],
-    "大项目": [
-      "myworkflow:project-init",
-      "myworkflow:project-maintain",
-      "large-project-work:大项目初始化",
-      "large-project-work:大项目工作维护"
-    ],
     "数据可视化": [
       "builtin:dataviz"
     ],
@@ -34,7 +36,7 @@
     ],
     "Skill/插件开发": [
       "skill-creator:skill-creator",
-      "myworkflow:skill-authoring"
+      "myworkflow-extra:skill-authoring"
     ],
     "Microsoft 文档": [
       "microsoft-docs:microsoft-docs",
@@ -46,7 +48,7 @@
     ]
   },
   "inventory": {
-    "updatedAt": "2026-08-04T02:44:08",
+    "updatedAt": "2026-09-17T15:12:05",
     "count": 39,
     "skills": [
       {
@@ -60,18 +62,6 @@
         "slug": "frontend-design:frontend-design",
         "name": "frontend-design",
         "trigger": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults."
-      },
-      {
-        "plugin": "large-project-work",
-        "slug": "large-project-work:大项目初始化",
-        "name": "大项目初始化",
-        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项目结构设置、大项目初始化、搭建项目骨架。也适用于项目变复杂后需要从零建立文档管理体系的场景。反例：已有完善四文件体系的项目（应使用「大项目工作维护」）、单文件脚本、临时小工具。"
-      },
-      {
-        "plugin": "large-project-work",
-        "slug": "large-project-work:大项目工作维护",
-        "name": "大项目工作维护",
-        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md，最后验证无遗漏。触发词：更新进度、同步文档、记录工作、维护项目文档。隐式触发：CLAUDE.md 引导调用时，或项目根目录存在四文件体系且产生了代码变更。反例：项目尚未初始化四文件（应先调用「大项目初始化」）、纯问答、无代码产出的讨论。"
       },
       {
         "plugin": "microsoft-docs",
@@ -95,13 +85,13 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:agent-dev-loop",
         "name": "智能体闭环开发",
-        "trigger": "**必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill。触发包括但不限于：\"帮我加个XX\"\"把这个改成XX\"\"这里能不能XX\"\"写一个XX\"\"实现XX\"\"重构XX\"\"新增XX\"\"改一下XX\"\"有个bug\"\"报错了\"\"坏了\"。即使请求只有几个字（如\"加个登录\"），也必须触发。禁止跳过。禁止仅用单元测试代替真实验证。不触发仅限：纯问答、闲聊、代码解释/阅读、纯根因排查（只查不修，用 root-cause-analysis）。"
+        "trigger": "**必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill。触发包括但不限于：\"帮我加个XX\"\"把这个改成XX\"\"这里能不能XX\"\"写一个XX\"\"实现XX\"\"重构XX\"\"新增XX\"\"改一下XX\"\"有个bug\"\"报错了\"\"坏了\"。即使请求只有几个字（如\"加个登录\"），也必须触发。禁止跳过。禁止仅用单元测试代替真实验证。不触发仅限：纯问答、闲聊、代码解释/阅读、纯根因排查（只查不修，用 root-cause-analysis）、纯文稿写作（写文章/文案/报告走 write-prose 与 polish-prose）。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:anti-sycophancy",
         "name": "反谄媚",
-        "trigger": "Use when 检测到以下红旗场景时自动激活——触发场景：用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求。不触发仅限：纯信息查询、闲聊、用户明确要求停止质疑。"
+        "trigger": "Use when 检测到以下红旗场景时自动激活——用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求。触发词：就这样吧、别管测试了、先跑起来再说、跳过这步、简单点、应该没问题。不触发仅限：纯信息查询、闲聊、用户已决策后的执行、用户明确要求停止质疑。"
       },
       {
         "plugin": "myworkflow",
@@ -111,21 +101,9 @@
       },
       {
         "plugin": "myworkflow",
-        "slug": "myworkflow:file-organize",
-        "name": "电脑整理",
-        "trigger": "Use when 需要整理主文件夹/电脑文件结构时触发。触发词：整理文件夹、文件归类、待整理里有什么、电脑整理、把我的文件分类。参考 D 盘 CH3SH 编号分类组织方式。移动操作先提议后执行，不擅自删除。"
-      },
-      {
-        "plugin": "myworkflow",
         "slug": "myworkflow:github-collab",
         "name": "Github协作",
         "trigger": "Use when 需要将代码变更推送到 GitHub、创建 PR、进行 code review、合并分支、使用 git worktree 隔离开发，或任何涉及 Git/GitHub 协作的操作。触发词：提交代码、push、PR、pull request、创建 PR、合并、merge、rebase、分支、branch、worktree、代码审查、code review、推送到远程、发起合入、审查这个 PR。不触发：纯本地只读查询（git log/git diff/git status/git branch -v 等不改变仓库状态的命令）。"
-      },
-      {
-        "plugin": "myworkflow",
-        "slug": "myworkflow:humanizer-zh",
-        "name": "humanizer-zh",
-        "trigger": "Use when 需要编辑或审阅文本，去除 AI 生成痕迹使其听起来更自然、更像人类书写。触发词：去 AI 味、润色文本、改写、humanize、去机器人味、太像 AI 写的。不触发：纯技术文档审阅、代码审查、文本翻译。"
       },
       {
         "plugin": "myworkflow",
@@ -147,21 +125,21 @@
       },
       {
         "plugin": "myworkflow",
-        "slug": "myworkflow:pdf-to-markdown",
-        "name": "pdf-to-markdown",
-        "trigger": "Extract content from scanned/image-based PDFs using OCR, then reconstruct formulas, equations, and technical notation into proper LaTeX using contextual reasoning. Use this skill whenever the user asks to: extract text from scanned PDFs, OCR a PDF, convert scanned textbook/document pages to Markdown, reconstruct formulas/symbols from OCR output, digitize a physical document containing equations, convert image-based PDF to Markdown with LaTeX, or process scanned technical/scientific content. Works with any language supported by Tesseract OCR."
+        "slug": "myworkflow:polish-prose",
+        "name": "文稿润色",
+        "trigger": "Use when 已有一篇中文成稿需要修改或诊断。触发词：太像 AI 写的、读起来别扭、太生硬、帮我润色、改一下这篇、改稿、点评一下、有什么问题、给个修改意见。不触发：从零写作（走文稿写作）、只需核对事实的技术文档审阅、代码与注释、翻译、纯问答。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:project-init",
-        "name": "大项目初始化",
-        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项目结构设置、大项目初始化、搭建项目骨架。也适用于项目变复杂后需要从零建立文档管理体系的场景。反例：已有完善四文件体系的项目（应使用「大项目工作维护」）、单文件脚本、临时小工具。"
+        "name": "项目文档初始化",
+        "trigger": "Use when 需要在一个文件夹上建立项目文档体系的场景——用户说\"初始化项目\"\"建立项目文档体系\"\"创建 CLAUDE.md\"\"项目结构设置\"\"搭建项目骨架\"\"给这个项目建文档\"，或进入一个还没有 CLAUDE.md 的文件夹、准备在这里长期开发东西时。触发词：初始化项目、建立文档体系、创建 CLAUDE.md、项目结构、搭建骨架、补建文档。不触发：已有 CLAUDE.md 与 docs/ 体系的项目（走「myworkflow:project-maintain」）、单文件脚本、临时小工具、只读浏览、纯问答。"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:project-maintain",
-        "name": "大项目工作维护",
-        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md，最后验证无遗漏。触发词：更新进度、同步文档、记录工作、维护项目文档。隐式触发：CLAUDE.md 引导调用时，或项目根目录存在四文件体系且产生了代码变更。反例：项目尚未初始化四文件（应先调用「大项目初始化」）、纯问答、无代码产出的讨论。"
+        "name": "项目工作维护",
+        "trigger": "Use when 在一个已有 CLAUDE.md 的文件夹里做任何会改动东西的工作时——开工前与收尾两个时机。触发词：更新进度、同步文档、记录工作、维护项目文档、更新 design、更新状态、这个功能记到文档里。隐式触发：CLAUDE.md 里写着\"每次会话先调用 myworkflow:project-maintain\"；工作目录下有 CLAUDE.md 且本轮产生了代码或文件变更；需要为某次改动补 design；在旧四文件体系项目里开始工作。不触发：目标文件夹没有 CLAUDE.md（先走「myworkflow:project-init」）、纯问答、纯阅读、本轮没有任何文件改动。"
       },
       {
         "plugin": "myworkflow",
@@ -189,27 +167,9 @@
       },
       {
         "plugin": "myworkflow",
-        "slug": "myworkflow:self-study-guide",
-        "name": "self-study-guide",
-        "trigger": "Transform structured STEM content (textbooks, lectures, academic papers) into rigorous, accessible study guides — delivered as if a university lecturer is teaching a student from scratch (textbook mode) or a research mentor is walking a junior through a paper (paper mode). Use whenever the user asks to create study notes, distill textbook sections, make exam prep materials, read/explain a paper, or \"提炼/整理/总结\" course/paper content — for math, physics, computer science, engineering, and related disciplines. Each invocation processes ONE chapter or paper section as a self-contained lecture. The skill follows a \"formal statement → plain-language explanation\" paradigm: every definition, theorem, and notation is stated formally first, then immediately unpacked in plain language with physical intuition and step-by-step reasoning. Includes a mandatory self-review phase before output."
-      },
-      {
-        "plugin": "myworkflow",
-        "slug": "myworkflow:skill-authoring",
-        "name": "辅助写技能",
-        "trigger": "Use when 用户需要创建、修改、优化或审查一个 skill（SKILL.md），或者讨论 skill 的设计。触发词：创建 skill、写一个 skill、新建技能、修改 skill、优化 skill、skill 怎么写、帮我设计 skill、审查这个 skill、这个 skill 有什么问题。不触发：纯使用 skill（直接调目标 skill）、与 skill 无关的代码编写、闲聊式评价 skill（如\"这 skill 挺好\"）。"
-      },
-      {
-        "plugin": "myworkflow",
-        "slug": "myworkflow:storage-analyzer",
-        "name": "storage-analyzer",
-        "trigger": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。"
-      },
-      {
-        "plugin": "myworkflow",
         "slug": "myworkflow:subagent-protocol",
         "name": "子智能体执行协议",
-        "trigger": "Use when 你被主智能体通过 Agent 工具创建为子智能体，prompt 中包含 task-id，且工作目录中存在 .task-manifest/ 目录。主智能体不调用本 skill，仅在子智能体 prompt 中引用。"
+        "trigger": "Use when 你被主智能体通过 Agent 工具创建为子智能体，且满足二者之一——prompt 中包含 task-id，或工作目录中存在 .task-manifest/ 合约目录（无 task-id 时的自举入口）。主智能体不调用本 skill，仅在子智能体 prompt 中引用。"
       },
       {
         "plugin": "myworkflow",
@@ -221,7 +181,49 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:task-router",
         "name": "任务分类入口",
-        "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill，或疑似专项任务时查表。分类概念由会话注入（hook）提供，本表只作速查。不适用于子智能体。"
+        "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill、疑似专项任务时查表，或在同一会话内从一类任务切到另一类需要确认路径时。触发词：这算什么任务、该用哪个 skill、走哪个流程、换个话题、切换到、专项任务查表。分类概念由会话注入（hook）提供，本表只作速查。不适用于子智能体。"
+      },
+      {
+        "plugin": "myworkflow",
+        "slug": "myworkflow:write-prose",
+        "name": "文稿写作",
+        "trigger": "Use when 从零产出一篇中文文稿——只有主题、意图或散材料，还没有成稿。触发词：写一篇、帮我写、起草、写个文案、写篇文章、写份报告、写演讲稿、写周报、根据这些要点写、写个方案说明、写封邮件、写段口播。不触发：已有成稿只需修改或诊断（走文稿润色）、需多源检索的调研报告（走深度调研）、代码与配置（走智能体闭环开发）、纯翻译、纯问答。"
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:file-organize",
+        "name": "电脑整理",
+        "trigger": "Use when 需要整理主文件夹/电脑文件结构时触发。触发词：整理文件夹、文件归类、待整理里有什么、电脑整理、把我的文件分类。参考 D 盘 CH3SH 编号分类组织方式。移动操作先提议后执行，不擅自删除。"
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:humanizer-zh",
+        "name": "humanizer-zh",
+        "trigger": "Use when 需要编辑或审阅文本，去除 AI 生成痕迹使其听起来更自然、更像人类书写。触发词：去 AI 味、润色文本、改写、humanize、去机器人味、太像 AI 写的。不触发：纯技术文档审阅、代码审查、文本翻译。"
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:pdf-to-markdown",
+        "name": "pdf-to-markdown",
+        "trigger": "Extract content from scanned/image-based PDFs using OCR, then reconstruct formulas, equations, and technical notation into proper LaTeX using contextual reasoning. Use this skill whenever the user asks to: extract text from scanned PDFs, OCR a PDF, convert scanned textbook/document pages to Markdown, reconstruct formulas/symbols from OCR output, digitize a physical document containing equations, convert image-based PDF to Markdown with LaTeX, or process scanned technical/scientific content. Works with any language supported by Tesseract OCR."
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:self-study-guide",
+        "name": "self-study-guide",
+        "trigger": "Transform structured STEM content (textbooks, lectures, academic papers) into rigorous, accessible study guides — delivered as if a university lecturer is teaching a student from scratch (textbook mode) or a research mentor is walking a junior through a paper (paper mode). Use whenever the user asks to create study notes, distill textbook sections, make exam prep materials, read/explain a paper, or \"提炼/整理/总结\" course/paper content — for math, physics, computer science, engineering, and related disciplines. Each invocation processes ONE chapter or paper section as a self-contained lecture. The skill follows a \"formal statement → plain-language explanation\" paradigm: every definition, theorem, and notation is stated formally first, then immediately unpacked in plain language with physical intuition and step-by-step reasoning. Includes a mandatory self-review phase before output."
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:skill-authoring",
+        "name": "辅助写技能",
+        "trigger": "Use when 用户需要创建、修改、优化或审查一个 skill（SKILL.md），或者讨论 skill 的设计。触发词：创建 skill、写一个 skill、新建技能、修改 skill、优化 skill、skill 怎么写、帮我设计 skill、审查这个 skill、这个 skill 有什么问题。不触发：纯使用 skill（直接调目标 skill）、与 skill 无关的代码编写、闲聊式评价 skill（如\"这 skill 挺好\"）。"
+      },
+      {
+        "plugin": "myworkflow-extra",
+        "slug": "myworkflow-extra:storage-analyzer",
+        "name": "storage-analyzer",
+        "trigger": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。"
       },
       {
         "plugin": "skill-creator",

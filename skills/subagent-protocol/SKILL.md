@@ -1,6 +1,6 @@
 ---
 name: 子智能体执行协议
-description: Use when 你被主智能体通过 Agent 工具创建为子智能体，prompt 中包含 task-id，且工作目录中存在 .task-manifest/ 目录。主智能体不调用本 skill，仅在子智能体 prompt 中引用。
+description: Use when 你被主智能体通过 Agent 工具创建为子智能体，且满足二者之一——prompt 中包含 task-id，或工作目录中存在 .task-manifest/ 合约目录（无 task-id 时的自举入口）。主智能体不调用本 skill，仅在子智能体 prompt 中引用。
 allowed-tools:
   - Read
   - Write
@@ -16,16 +16,19 @@ allowed-tools:
 
 - **调用者**：子智能体（主智能体不调用本 skill，只引用它）。
 - **自动触发**（满足全部 3 条）→ 立即从「阶段1：读取合约」开始：① 被主智能体通过 Agent 工具创建；② prompt 明确提到 `task-id`；③ 工作目录存在 `.task-manifest/task-contract.yaml` 且 `.task-manifest/prompts/`。
+- **自举触发**（不满足自动触发时）→ 无 task-id 但工作目录存在 `.task-manifest/` → 走下方「自举保障」，先向主智能体确认执行哪一个任务，不猜测。
 - **不触发**：普通问答（无 task-id、无合约）、单件小事（如"检查语法错误"）、找不到 task-contract.yaml 也无 task-id。
 
 ### 主智能体强制引用（task-dispatch 派发时必须写入子智能体 prompt）
 
 ```
-你必须遵循「子智能体执行协议」。你的 task-id 是 {task-id}。
+你必须遵循「myworkflow:subagent-protocol」。你的 task-id 是 {task-id}。
 先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，
 再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，
 然后严格按 5 阶段协议工作：阶段 1：读取合约+确认输入。先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，逐一读取 inputs 中的文件路径。阶段 2-5 声明接口→产出实现→自检→完成报告。
 ```
+
+> **一致性约束**：本模板与 `skills/task-dispatch/SKILL.md`「第七步：派发子智能体」中的同名模板必须**逐字一致**，修改其一时必须同步另一处。（用 slug `myworkflow:subagent-protocol` 而非中文显示名——技能寻址走目录名，中文名不参与寻址，写 slug 才能稳定触发。）
 
 ### 自举保障（主智能体漏引用/漏 task-id 时）
 
