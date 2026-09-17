@@ -23,3 +23,9 @@ __pycache__/
 *.tmp
 *.bak
 *.bak-*
+
+# 开发端内容（不随插件发布）
+# 进度记录与内部文档只保留在本地，不进仓库
+docs/
+PROGRESS.md
+PROGRESS-LITE.md

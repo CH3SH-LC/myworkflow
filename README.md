@@ -191,8 +191,6 @@ myworkflow/
   plugin.json                  # marketplace 发布清单（v5.0.0，声明 18 个技能）
   .claude-plugin/plugin.json   # 运行时发现元数据（v5.0.0）
   README.md
-  PROGRESS.md                  # 完整开发进度
-  PROGRESS-LITE.md             # 进度速查
   hooks/
     hooks.json                 # 仅 SessionStart（startup + clear|compact，timeout 15s）
     session-init.sh            # 路由式锚点（5 类任务→skill + 开发阶段链）；子智能体注入协议锚点
@@ -223,12 +221,6 @@ myworkflow/
     lightweight-dispatch/      # 轻量级派发
     subagent-protocol/         # 子智能体执行协议
     integration-verify/        # 集成验证与修正
-  docs/
-    my-architecture.md         # 原始设计想法
-    refined-architecture.md    # 细化方案 v2
-    architecture-topology.md   # 技能连接拓扑（维护用）
-    skills-reference.md        # 技能总览
-    hooks-reference.md         # hook 说明
 ```
 
 ### 项目文档体系（由 project-init / project-maintain 落地到目标项目）
@@ -246,10 +238,6 @@ myworkflow/
     ├── research/       # 外部世界怎么说（deep-research 落盘）
     └── other/          # 兜底，严格准入
 ```
-
-## 架构拓扑
-
-技能之间的连接结构（路由层、四组能力、编排铁三角、验证门禁、数据节点）见 **`docs/architecture-topology.md`** —— 内含可渲染的 Mermaid 图与维护边表。改动任何技能引用后请同步该文件。
 
 ## 技术细节
 
