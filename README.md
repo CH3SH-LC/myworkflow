@@ -6,7 +6,7 @@ AI 辅助开发全流程技能包 —— 为 Claude Code 提供从需求理解�
 
 ## 设计理念
 
-MyWorkflow 将 AI 辅助开发拆解为 **22 个自包含技能**，采用 **扁平化架构 + 阶段感知锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入"存在 5 类任务"的认知 + 开发阶段→skill 链（阶段3 遇 bug→root-cause、阶段4→real-world-verify、提交→github-collab 等），并指引疑似专项任务查询注册表。
+MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 阶段感知锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入"存在 5 类任务"的认知 + 开发阶段→skill 链（阶段3 遇 bug→root-cause、阶段4→real-world-verify、提交→github-collab 等），并指引疑似专项任务查询注册表。
 
 v3/v4 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构：
 
@@ -35,7 +35,7 @@ v3/v4 系列针对模型更换后的实际使用痛点做了系统性瘦身与�
           Skill 互相引用（myworkflow: 前缀）
 ```
 
-### 22 个技能
+### 24 个技能
 
 | 组 | 技能（目录名 / 显示名） | 用途 |
 |----|------------------------|------|
@@ -48,6 +48,8 @@ v3/v4 系列针对模型更换后的实际使用痛点做了系统性瘦身与�
 | | `github-collab` Github协作 | 隔离开发→提交→PR→审查→合并 |
 | **调研/文稿/学习** | `deep-research` 深度调研 | 多源并行搜索→交叉验证→强制 .md 落盘报告 |
 | | `humanizer-zh` | 去除中文文本 AI 痕迹 |
+| | `write-prose` 文稿写作 | 从零产出中文成稿（文章/文案/报告/演讲稿/周报/邮件） |
+| | `polish-prose` 中文成稿润色与去 AI 味 | 诊断已有原稿，按 L1/L2/L3 最小充分修改 |
 | | `pdf-to-markdown` | 扫描版 PDF OCR → Markdown + LaTeX 公式还原 |
 | | `self-study-guide` | STEM 教材/论文 → 讲师模式/导师模式学习讲义 |
 | **任务编排** | `task-router` 任务分类入口 | 极简分类速查表（分类概念在 hook，本表只作快照） |
@@ -87,7 +89,7 @@ v3/v4 系列针对模型更换后的实际使用痛点做了系统性瘦身与�
 
 ### 验证安装
 
-启动新的 Claude Code 会话，技能列表中应出现全部 22 个 `myworkflow:*` 技能；SessionStart 时注入分类概念锚点：
+启动新的 Claude Code 会话，技能列表中应出现全部 24 个 `myworkflow:*` 技能；SessionStart 时注入分类概念锚点：
 > 直接按用户请求调用匹配的 Skill 完成工作；没有匹配的 skill 就自己完成。最多澄清 1 个关键问题。任务分 5 类：代码编写 / 文稿撰写 / 深度调研 / 专项任务 / 简单问答。疑似专项任务时，查 myworkflow 插件的 config/special-skills.json 找对应 skill。
 
 ## 工作流
@@ -139,7 +141,7 @@ myworkflow/
     registry-scan.sh           # 专项注册表扫描生成器（幂等，~1s）
   config/
     special-skills.json        # 专项注册表（categories 人工 + inventory 自动）
-  skills/                      # 22 个技能，每技能一个 SKILL.md
+  skills/                      # 24 个技能，每技能一个 SKILL.md
     task-router/               # 任务分类入口（极简速查）
     agent-dev-loop/            # 智能体闭环开发（含 bug 修复路径）
       references/testing-anti-patterns.md
