@@ -14,6 +14,8 @@ description: Use when 要建 agent 团队、分派模块成员、处理成员/�
 4. **验收与补位**：owner 用 `team_work_verify` 按验收条件核验；任一结算由调度器补位，无全批屏障 → 超时判进展，「未知/暂停」≠ 失败，迟到回执只归档。
 5. **收尾**：缺陷原 owner 修，集成由 leader 与 owner 共担 → 阻塞按 记录→就地取材→补适配器→绕行→needs_user 推进，权限拒绝不绕过。
 
+### 运行时异常处置协议（5 条）
+
 **异常处置**：成员不可达先 inspect 冷恢复补派、不新建；写冲突定单写者；owner failed 由新 owner 新 work 复核，旧 work 留 awaiting_verification；租约陈旧换 self/plain 不重试；投递失败 cold-resume → plain-subagent。
 
 **完成判据**：产物 + 验收映射 + 可核查证据（命令/输出、路径、版本）；idle、超时、非空文件、只说不做都不算完成。
