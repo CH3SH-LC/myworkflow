@@ -6,14 +6,14 @@ AI 辅助开发全流程技能包 —— 为 Claude Code 提供从需求理解�
 
 ## 设计理念
 
-MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 阶段感知锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入"存在 5 类任务"的认知 + 开发阶段→skill 链（阶段3 遇 bug→root-cause、阶段4→real-world-verify、提交→github-collab 等），并指引疑似专项任务查询注册表。
+MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 三级协作判级锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入工作级别判定（L1 单智能体 / L2 子智能体 / L3 团队）+ 5 类任务认知 + 加载时机说明（"阶段"只是加载技能的时机，禁止把同一交付物按阶段拆给多个执行者），并指引疑似专项任务查询注册表。
 
-v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布；v2.1.0（10 月 28 日）升级三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）；v2.1.1（10 月 28 日）体检整改（F1–F16：判级/禁止阶段接力/证据口径/命名与仓库文档配置）：
+v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布；v2.1.0（10 月 28 日）升级三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）；v2.1.1（10 月 28 日）体检整改（F1–F17：判级/禁止阶段接力/证据口径/命名与仓库文档配置）：
 
 | 问题（1.0.x–1.1） | 方案（2.0.0） |
 |-----------|----------------|
-| SessionStart 注入 16KB 五分类仪式，后半段放弃遵守 | 注入精简到 ~260 字阶段感知锚点（5 类概念 + 阶段→skill 链） |
-| 1.0.2 拆掉执行期钩子后，后半程技能触发概率下降 | 锚点显式列出阶段链：阶段3 bug→root-cause、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh；注册表触发词不再截断 |
+| SessionStart 注入 16KB 五分类仪式，后半段放弃遵守 | 注入精简到 ~260 字锚点（5 类概念 + 技能加载时机提示） |
+| 1.0.2 拆掉执行期钩子后，后半程技能触发概率下降 | 锚点显式列出加载时机：遇 bug→root-cause、真实验证→real-world-verify、提交→github-collab、润色→humanizer-zh；注册表触发词不再截断 |
 | 强制"分类→2-5 轮提问→报告→确认"链路 | 技能按描述直接触发，最多澄清 1 个关键问题 |
 | 专项任务路由靠硬编码映射，易漂移 | 专项注册表 `config/special-skills.json`（自动扫描 + 人工分类） |
 | 修复 bug 独立成顶层 skill | 修复并入智能体闭环开发，找 bug 独立走 root-cause-analysis |
@@ -23,7 +23,7 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 ## 架构
 
 ```
-用户请求 ──→ 直接匹配技能 description（分类概念由 hook 提供）
+用户请求 ──→ 直接匹配技能 description（级别判定 + 分类概念由 hook 提供）
                  │
     ┌────────────┼─────────────┐
     ▼            ▼             ▼
@@ -40,23 +40,23 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 | 组 | 技能（目录名 / 显示名） | 用途 |
 |----|------------------------|------|
 | **代码开发** | `agent-dev-loop` 智能体闭环开发 | 功能开发全流程门禁（含 bug 修复路径）：需求→计划→TDD→真实验证→循环 |
-| | `registry-maintain` 专项注册表维护 | 维护 config/special-skills.json（专项路由数据源） |
+| | `registry-maintain` 专项注册表维护 | 维护 config/special-skills.json（categories 人工维护 + inventory 自动扫描） |
 | | `root-cause-analysis` 根因定位与全面排查 | 5 Whys + 数据流追踪 + 假设验证 + 五项专项排查技术（只查不修） |
 | | `real-world-verify` 真实验证 | 所有编程技能的验证门禁：像用户一样使用产品 |
-| | `project-init` 大项目初始化 | 建立 CLAUDE.md/PROGRESS.md/STRUCTURE.md 四文件体系 |
-| | `project-maintain` 大项目工作维护 | 工作前读文档 + 工作后同步进度 |
+| | `project-init` 项目文档初始化 | 在文件夹上建立 CLAUDE.md + STRUCTURE.md + docs/ 的 **8 位置文档体系**（含体系识别/迁移与开工门禁） |
+| | `project-maintain` 项目工作维护 | 两个调用时机（进入时读文档 + 开工门禁 / 完成时强制同步 + 校验）的 **6 阶段主线** |
 | | `github-collab` Github协作 | 隔离开发→提交→PR→审查→合并 |
 | **调研/文稿/学习** | `deep-research` 深度调研 | 多源并行搜索→交叉验证→强制 .md 落盘报告 |
 | | `humanizer-zh` | 去除中文文本 AI 痕迹 |
 | | `write-prose` 文稿写作 | 从零产出中文成稿（文章/文案/报告/演讲稿/周报/邮件） |
-| | `polish-prose` 中文成稿润色与去 AI 味 | 诊断已有原稿，按 L1/L2/L3 最小充分修改 |
+| | `polish-prose` 文稿润色 | 诊断已有原稿，按最小充分修改力度分级（去 AI 味 / 润色） |
 | | `pdf-to-markdown` | 扫描版 PDF OCR → Markdown + LaTeX 公式还原 |
 | | `self-study-guide` | STEM 教材/论文 → 讲师模式/导师模式学习讲义 |
-| **任务编排** | `task-router` 任务分类入口 | 极简分类速查表（分类概念在 hook，本表只作快照） |
-| | `task-dispatch` 任务拆解与派发 | 结构化拆解复杂任务 + 合约驱动的并行派发 |
-| | `lightweight-dispatch` 轻量级派发 | N 个无依赖轻任务快速并行（无合约模式） |
-| | `subagent-protocol` 子智能体执行协议 | 子智能体工作规范（hook 注入锚点 + 本 skill 承载细节） |
-| | `integration-verify` 集成验证与修正 | 子智能体产出接口合规验证 |
+| **任务编排** | `task-router` 任务分类入口 | 第一步判工作级别（L1 单智能体 / L2 子智能体 / L3 团队），再按 5 类任务给 skill 路径 |
+| | `task-dispatch` 任务拆解与派发 | L3 拆分契约：横向切可独立交付物 + 禁止阶段接力的正例/反例 |
+| | `lightweight-dispatch` 轻量级派发 | L2 操作规程（≥2 个平铺、无依赖小交付物）+ 升级 L3 的判据 |
+| | `subagent-protocol` 成员与执行者协作协议 | L2 子智能体 / L3 leaf 协作协议（回执→可复核证据→owner 验收；禁止阶段拆分） |
+| | `integration-verify` 集成验证与修正 | 子智能体产出接口合规验证 + 证据口径（produced / verified / accepted） |
 | | `req-clarify` 需求澄清 | 可被任何 skill 调用的澄清工具 |
 | **电脑专项** | `storage-analyzer` 电脑清理 | 只读扫描磁盘 → 三色分级 → 交互式 HTML 报告（适配自卡兹克） |
 | | `file-organize` 电脑整理 | 编号分类文件夹维护（参考 D:\CH3SH），移动需确认 |
@@ -98,7 +98,7 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 会话启动
   │
   ▼
-SessionStart Hook（~200 字）── 分类概念锚点 + 注册表自动刷新
+SessionStart Hook（~260 字）── 级别判定 + 分类概念锚点 + 注册表自动刷新
   │                              （子智能体上下文 → 一行协议锚点）
   ▼
 收到用户请求
@@ -117,7 +117,7 @@ SessionStart Hook（~200 字）── 分类概念锚点 + 注册表自动刷新
 
 | # | 决策 | 理由 |
 |---|------|------|
-| 1 | 扁平化触发 + 分类概念锚点 | 分类有价值但仪式无价值——hook 只给"有 5 类"概念，不给处理指令 |
+| 1 | 先判级别再分类 | L1/L2/L3 与 5 类只是认知锚点——hook 只给判级与分类概念，不给处理指令（禁止阶段拆分） |
 | 2 | 专项注册表 config/special-skills.json | 专项 skill 是动态集合，结构化注册表可查询、可自动扫描、不漂移 |
 | 3 | 修复 bug 并入开发闭环 | 修复不是独立任务，是开发的一部分；找 bug（root-cause）独立调用 |
 | 4 | Description 铁律 | description 只写"何时触发"，不写"技能做什么" |
@@ -142,7 +142,7 @@ myworkflow/
   config/
     special-skills.json        # 专项注册表（categories 人工 + inventory 自动）
   skills/                      # 24 个技能，每技能一个 SKILL.md
-    task-router/               # 任务分类入口（极简速查）
+    task-router/               # 任务分类入口（先判级别）
     agent-dev-loop/            # 智能体闭环开发（含 bug 修复路径）
       references/testing-anti-patterns.md
     registry-maintain/         # 专项注册表维护
@@ -150,8 +150,8 @@ myworkflow/
       references/condition-based-waiting.md
       references/defense-in-depth.md
     real-world-verify/         # 真实验证（强制门禁）
-    project-init/              # 大项目初始化
-    project-maintain/          # 大项目工作维护
+    project-init/              # 项目文档初始化
+    project-maintain/          # 项目工作维护
     github-collab/             # Github协作
     deep-research/             # 深度调研
     humanizer-zh/              # 中文 AI 痕迹清除
