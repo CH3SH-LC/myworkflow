@@ -1,8 +1,8 @@
 ---
 name: 成员与执行者协作协议
-description: Use when 你被主智能体通过 Agent 工具创建为子智能体，且满足二者之一——prompt 中包含 task-id，或工作目录中存在 .task-manifest/ 合约目录（无 task-id 时的自举入口）
+description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 task-id 或存在 .task-manifest/ 合约目录），或参与 L3 团队协作（leader 下 mission / member 域自治 / leaf 执行任务包）时加载本协议
 ---
-# 子智能体执行协议（L2 执行者 + L3 团队协作协议）
+# 成员与执行者协作协议（L2 执行者 + L3 团队协作）
 
 ## 协作模型总览：L1 / L2 / L3
 
