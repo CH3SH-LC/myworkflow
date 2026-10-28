@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.2.1 — 2026-10-29
+
+补丁：收口 2.2.0 遗留的插件清单陈旧元数据（不涉及技能内容变更）。
+
+### 变更
+- 仓库根 `plugin.json` 的 `skills` 数组由 24 项清为 **21 项**：移除 3 个已下线技能的 dangling 路径（`skills/write-prose`、`skills/polish-prose`、`skills/anti-sycophancy`），保留现存 15 个 DSH + 6 个非 DSH 技能路径；与仓库实际 `skills/` 目录一一对应。
+- `plugin.json` / `.claude-plugin/plugin.json` 版本 → **2.2.1**；README 当前版本与安装示例同步 2.2.1。
+- 18 个技能正文、hooks、config、references 均无改动（v2.2.0 内容零回退）。
+
+### 验证
+- `plugin.json.skills` = 21，全部路径在仓库 `skills/` 下存在，dangling=0；仓库 `skills/` 目录 = 21（15 DSH + 6 非 DSH）。
+- 相对 v2.2.0（5856dbf）差异仅 `plugin.json`、`.claude-plugin/plugin.json`、`CHANGELOG.md`、`README.md` 四个文件。
+
 ## v2.2.0 — 2026-10-29
 
 协作模型语义修正 + 等待纪律 + 技能精简：修正 L2/L3 定义与 member/leaf 区别，新增「禁止在自己回合内等待」与 30 秒后台纪律，删除 3 个技能（组件 18→15，仓库技能目录 24→21）。
