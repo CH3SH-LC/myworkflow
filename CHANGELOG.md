@@ -7,7 +7,7 @@
 ### 变更
 - 仓库根 `plugin.json` 的 `skills` 数组由 24 项清为 **21 项**：移除 3 个已下线技能的 dangling 路径（`skills/write-prose`、`skills/polish-prose`、`skills/anti-sycophancy`），保留现存 15 个 DSH + 6 个非 DSH 技能路径；与仓库实际 `skills/` 目录一一对应。
 - `plugin.json` / `.claude-plugin/plugin.json` 版本 → **2.2.1**；README 当前版本与安装示例同步 2.2.1。
-- 18 个技能正文、hooks、config、references 均无改动（v2.2.0 内容零回退）。
+- 15 个 DSH 技能正文与 6 个非 DSH 技能、hooks、config、references 均无改动（v2.2.0 内容零回退）；仅插件清单与版本元数据更新。
 
 ### 验证
 - `plugin.json.skills` = 21，全部路径在仓库 `skills/` 下存在，dangling=0；仓库 `skills/` 目录 = 21（15 DSH + 6 非 DSH）。
