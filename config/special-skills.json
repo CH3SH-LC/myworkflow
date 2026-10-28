@@ -46,8 +46,8 @@
     ]
   },
   "inventory": {
-    "updatedAt": "2026-08-04T02:44:08",
-    "count": 39,
+    "updatedAt": "2026-10-28T19:07:13",
+    "count": 41,
     "skills": [
       {
         "plugin": "claude-code-setup",
@@ -95,19 +95,19 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:agent-dev-loop",
         "name": "智能体闭环开发",
-        "trigger": "**必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill。触发包括但不限于：\"帮我加个XX\"\"把这个改成XX\"\"这里能不能XX\"\"写一个XX\"\"实现XX\"\"重构XX\"\"新增XX\"\"改一下XX\"\"有个bug\"\"报错了\"\"坏了\"。即使请求只有几个字（如\"加个登录\"），也必须触发。禁止跳过。禁止仅用单元测试代替真实验证。不触发仅限：纯问答、闲聊、代码解释/阅读、纯根因排查（只查不修，用 root-cause-analysis）。"
+        "trigger": "Use when **必须使用**——每当用户提出任何需要创建、修改或删除代码/文件的请求，或发现 bug 需要修复时，无论请求多简短、多隐含、是否在对话中途随口提出，都必须在做任何其他事情之前首先调用本 skill"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:anti-sycophancy",
         "name": "反谄媚",
-        "trigger": "Use when 检测到以下红旗场景时自动激活——触发场景：用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求。不触发仅限：纯信息查询、闲聊、用户明确要求停止质疑。"
+        "trigger": "Use when 检测到以下红旗场景时自动激活——用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:deep-research",
         "name": "深度调研",
-        "trigger": "Use when 用户需要深度、多来源、经事实验证的研究报告。触发词：深度调研、全面研究、帮我调研、写一份研究报告、调查一下、有什么方案、对比分析、技术选型。不触发：简单信息查询（直接搜索）、已明确的技术问题（直接回答）。"
+        "trigger": "Use when 用户需要深度、多来源、经事实验证的研究报告"
       },
       {
         "plugin": "myworkflow",
@@ -119,7 +119,7 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:github-collab",
         "name": "Github协作",
-        "trigger": "Use when 需要将代码变更推送到 GitHub、创建 PR、进行 code review、合并分支、使用 git worktree 隔离开发，或任何涉及 Git/GitHub 协作的操作。触发词：提交代码、push、PR、pull request、创建 PR、合并、merge、rebase、分支、branch、worktree、代码审查、code review、推送到远程、发起合入、审查这个 PR。不触发：纯本地只读查询（git log/git diff/git status/git branch -v 等不改变仓库状态的命令）。"
+        "trigger": "Use when 需要将代码变更推送到 GitHub、创建 PR、进行 code review、合并分支、使用 git worktree 隔离开发，或任何涉及 Git/GitHub 协作的操作"
       },
       {
         "plugin": "myworkflow",
@@ -131,19 +131,19 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:integration-verify",
         "name": "集成验证与修正",
-        "trigger": "Use when 子智能体完成产出后需要验证接口合规性。触发词：验证集成、检查接口、集成检查、验证子任务。支持批次验证、全体验证、增量验证三种模式。"
+        "trigger": "Use when 子智能体完成产出后需要验证接口合规性"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:lessismore",
         "name": "lessismore",
-        "trigger": "Use when 需要以\"少即是多\"的方式思考与协作时触发——回答过长、方案过度设计、输出冗余、或需要克制时。触发词：少即是多、简洁一点、精简、less is more、别写太多、克制一点。本 skill 是行为准则，横切不绑定具体任务。"
+        "trigger": "Use when 需要以\"少即是多\"的方式思考与协作时触发——回答过长、方案过度设计、输出冗余、或需要克制时"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:lightweight-dispatch",
         "name": "轻量级派发",
-        "trigger": "Use when 面对可以并行执行的 N 个可平铺、无依赖、单一目标的子任务时——适用于搜索、查询、简单生成、信息收集等可自然并行的轻量任务。触发信号：用户一次请求中描述了多项同类独立工作（如\"搜索 X 个人的信息\"\"同时查 A、B、C 的文档\"\"分别生成 3 个简单文件\"）。如果判断任务实际上需要结构化拆解和接口合约，则升级到「任务拆解与派发」。不触发仅限：单一原子操作、任务间存在强依赖、需要结构化合约的复杂多步骤任务。"
+        "trigger": "Use when 面对可以并行执行的 N 个可平铺、无依赖、单一目标的子任务时——适用于搜索、查询、简单生成、信息收集等可自然并行的轻量任务"
       },
       {
         "plugin": "myworkflow",
@@ -153,39 +153,45 @@
       },
       {
         "plugin": "myworkflow",
+        "slug": "myworkflow:polish-prose",
+        "name": "文稿润色",
+        "trigger": "Use when 已有一篇中文成稿需要修改或诊断"
+      },
+      {
+        "plugin": "myworkflow",
         "slug": "myworkflow:project-init",
-        "name": "大项目初始化",
-        "trigger": "Use when 开始新的大型项目，或已有项目缺少 CLAUDE.md/PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md 四文件体系需要补建。触发词：初始化项目、建立项目文档体系、创建CLAUDE.md、项目结构设置、大项目初始化、搭建项目骨架。也适用于项目变复杂后需要从零建立文档管理体系的场景。反例：已有完善四文件体系的项目（应使用「大项目工作维护」）、单文件脚本、临时小工具。"
+        "name": "项目文档初始化",
+        "trigger": "Use when 需要在一个文件夹上建立项目文档体系的场景——用户说\"初始化项目\"\"建立项目文档体系\"\"创建 CLAUDE.md\"\"项目结构设置\"\"搭建项目骨架\"\"给这个项目建文档\"，或进入一个还没有 CLAUDE.md 的文件夹、准备在这里长期开发东西时"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:project-maintain",
-        "name": "大项目工作维护",
-        "trigger": "Use when 在已建立四文件体系的大型项目中执行任何开发工作。本 skill 是每次工作会话的标准流程——工作前阅读文档了解上下文，工作中收集变更信息，工作后强制更新 PROGRESS.md/PROGRESS-LITE.md/STRUCTURE.md，最后验证无遗漏。触发词：更新进度、同步文档、记录工作、维护项目文档。隐式触发：CLAUDE.md 引导调用时，或项目根目录存在四文件体系且产生了代码变更。反例：项目尚未初始化四文件（应先调用「大项目初始化」）、纯问答、无代码产出的讨论。"
+        "name": "项目工作维护",
+        "trigger": "Use when 在一个已有 CLAUDE.md 的文件夹里做任何会改动东西的工作时——开工前与收尾两个时机"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:real-world-verify",
         "name": "真实验证",
-        "trigger": "**强制门禁**——在智能体闭环开发阶段4（含 bug 修复验证）、根因定位修复验证、Github协作提交前，必须调用本 skill 执行真实验证。禁止仅跑单元测试、禁止只测部分路径、禁止无证据声称\"验证通过\"。触发词：验证、检查、测试、确认功能、跑一遍。不触发仅限：纯文档修改、纯配置修改、无代码变更的讨论。"
+        "trigger": "Use when **强制门禁**——在智能体闭环开发阶段4（含 bug 修复验证）、根因定位修复验证、Github协作提交前，必须调用本 skill 执行真实验证"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:registry-maintain",
         "name": "专项注册表维护",
-        "trigger": "Use when 需要更新专项任务注册表（config/special-skills.json）、添加或移除专项 skill、或回答\"有哪些专项技能/专项 skill\"时调用。触发词：更新专项清单、专项注册表、有哪些专项、special-skills、注册表维护。不触发：纯使用某个专项 skill（直接调目标 skill）。"
+        "trigger": "Use when 需要更新专项任务注册表（config/special-skills.json）、添加或移除专项 skill、或回答\"有哪些专项技能/专项 skill\"时调用"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:req-clarify",
         "name": "需求澄清",
-        "trigger": "Use when 用户需求不清晰、缺少关键信息、或需要方案对比决策时调用。可被任何 skill 调用，不绑定固定工作流。触发词：需求不清晰、帮我分析需求、有什么方案、帮我对比、怎么选择。不触发：纯问答、闲聊。"
+        "trigger": "Use when 用户需求不清晰、缺少关键信息、或需要方案对比决策时调用"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:root-cause-analysis",
         "name": "根因定位与全面排查",
-        "trigger": "Use when 智能体闭环开发 阶段3 遇到 bug 需定位根因，或用户直接要求深度排查。提供系统化根因定位方法论（5 Whys + 数据流逆向 + 假设-验证循环）+ 全面性扫描 + 五项专项排查技术（竞态/插桩/Bisect/防御性/Flaky）。触发词：根因、root cause、为什么、深层原因、全面排查、找全、还有没有别的、同类 bug、数据流追踪、5 whys、深度排查。只定位和报告，不修代码——修复由智能体闭环开发执行。"
+        "trigger": "Use when 智能体闭环开发 阶段3 遇到 bug 需定位根因，或用户直接要求深度排查"
       },
       {
         "plugin": "myworkflow",
@@ -203,25 +209,31 @@
         "plugin": "myworkflow",
         "slug": "myworkflow:storage-analyzer",
         "name": "storage-analyzer",
-        "trigger": "macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出 占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出 可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可 起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景 使用：用户说\"存储分析\"\"磁盘满了\"\"C盘/硬盘满了\"\"空间不够\"\"清理空间\" \"清理磁盘\"\"占空间\"\"哪些东西占地方\"\"帮我看看存储\"\"看一下电脑存储/空间\" \"存储空间\"\"电脑空间不够\"\"内存满了/不够/不足\"\"看下内存/存储\"（中文口语里 \"内存\"常指存储空间）\"storage analysis\"\"disk cleanup\"\"清缓存\"\"磁盘清理\"； 或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确 指运行内存/RAM（如\"哪个进程吃内存\"\"内存占用高\"想看活动监视器），那是 RAM 不是存储，不属于本 skill。"
+        "trigger": ">"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:subagent-protocol",
-        "name": "子智能体执行协议",
-        "trigger": "Use when 你被主智能体通过 Agent 工具创建为子智能体，prompt 中包含 task-id，且工作目录中存在 .task-manifest/ 目录。主智能体不调用本 skill，仅在子智能体 prompt 中引用。"
+        "name": "成员与执行者协作协议",
+        "trigger": "Use when 你被主智能体通过 Agent 工具创建为子智能体，且满足二者之一——prompt 中包含 task-id，或工作目录中存在 .task-manifest/ 合约目录（无 task-id 时的自举入口）"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:task-dispatch",
         "name": "任务拆解与派发",
-        "trigger": "Use when 面对任何非平凡的多步骤任务时，agent 应主动调用本 skill 评估是否需要拆解为并行子任务。适用于所有任务类型——编码、写作、研究、设计、规划、数据处理。触发信号：涉及多个产出物、任务存在可自然分离的子目标、预估需要多个独立步骤、或用户一次请求中描述了多项工作。核心原则：宁可误触发后判定\"不需要拆解\"，也不因跳过而串行执行可并行的任务。不触发仅限：单一原子操作、简单问答、纯信息查询。"
+        "trigger": "Use when 面对任何非平凡的多步骤任务时，agent 应主动调用本 skill 评估是否需要拆解为并行子任务"
       },
       {
         "plugin": "myworkflow",
         "slug": "myworkflow:task-router",
         "name": "任务分类入口",
-        "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill，或疑似专项任务时查表。分类概念由会话注入（hook）提供，本表只作速查。不适用于子智能体。"
+        "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill、疑似专项任务时查表，或在同一会话内从一类任务切到另一类需要确认路径时"
+      },
+      {
+        "plugin": "myworkflow",
+        "slug": "myworkflow:write-prose",
+        "name": "文稿写作",
+        "trigger": "Use when 从零产出一篇中文文稿——只有主题、意图或散材料，还没有成稿"
       },
       {
         "plugin": "skill-creator",
@@ -231,27 +243,9 @@
       },
       {
         "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:人物设计",
-        "name": "人物设计",
-        "trigger": "创建新角色或补充人设时使用——当需要设计主要人物、临时人物或龙套（有名字、极少剧情参与、非纯粹路人），进行属性速写、弧光设计、名场面预设、关系图谱，或发现现有人物行为与设定不一致需要修正时触发。"
-      },
-      {
-        "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:全书一致性审查",
-        "name": "全书一致性审查",
-        "trigger": "每10-15章或完成分卷时使用。当需要跨章节全局审查设定/人物/力量/伏笔/时间线/剧情逻辑的一致性，或写作中感觉\"好像哪里不对劲\"时触发。"
-      },
-      {
-        "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:具体写作",
-        "name": "具体写作",
-        "trigger": "通过写前审查后触发，用于正文创作。当需要写一章正文、续写下一章时使用。"
-      },
-      {
-        "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:写前审查",
-        "name": "写前审查",
-        "trigger": "每次写作前必须执行！当准备写新一章、用户直接要求开始写作、长时间中断后重新开始、或完成一个事件进入下一个事件时触发。检查细纲/人物/设定/时间线/风格/写作铁律是否就绪。"
+        "slug": "webnovel-studio:本书个性化设计",
+        "name": "本书个性化设计",
+        "trigger": "设计并持续维护本书的个性化指南文件。当项目初始化完成后需要深度定制风格/卖点/禁忌/约束，或写作中发现AI反复犯错需要追加记忆卡片时触发。管理5个指南文件：风格定位、核心卖点、书籍禁忌、AI记忆卡片、特殊设定约束。"
       },
       {
         "plugin": "webnovel-studio",
@@ -261,9 +255,9 @@
       },
       {
         "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:整体架构",
-        "name": "整体架构",
-        "trigger": "项目启动或彻底重建时使用。当需要创建文件夹结构、通过启发式提问明确小说核心定位、生成CLAUDE.md和进度文件时触发。"
+        "slug": "webnovel-studio:具体写作",
+        "name": "具体写作",
+        "trigger": "通过写前审查后触发，用于正文创作。当需要写一章正文、续写下一章时使用。"
       },
       {
         "plugin": "webnovel-studio",
@@ -273,15 +267,33 @@
       },
       {
         "plugin": "webnovel-studio",
-        "slug": "webnovel-studio:本书个性化设计",
-        "name": "本书个性化设计",
-        "trigger": "设计并持续维护本书的个性化指南文件。当项目初始化完成后需要深度定制风格/卖点/禁忌/约束，或写作中发现AI反复犯错需要追加记忆卡片时触发。管理5个指南文件：风格定位、核心卖点、书籍禁忌、AI记忆卡片、特殊设定约束。"
+        "slug": "webnovel-studio:全书一致性审查",
+        "name": "全书一致性审查",
+        "trigger": "每10-15章或完成分卷时使用。当需要跨章节全局审查设定/人物/力量/伏笔/时间线/剧情逻辑的一致性，或写作中感觉\"好像哪里不对劲\"时触发。"
+      },
+      {
+        "plugin": "webnovel-studio",
+        "slug": "webnovel-studio:人物设计",
+        "name": "人物设计",
+        "trigger": "创建新角色或补充人设时使用——当需要设计主要人物、临时人物或龙套（有名字、极少剧情参与、非纯粹路人），进行属性速写、弧光设计、名场面预设、关系图谱，或发现现有人物行为与设定不一致需要修正时触发。"
+      },
+      {
+        "plugin": "webnovel-studio",
+        "slug": "webnovel-studio:写前审查",
+        "name": "写前审查",
+        "trigger": "每次写作前必须执行！当准备写新一章、用户直接要求开始写作、长时间中断后重新开始、或完成一个事件进入下一个事件时触发。检查细纲/人物/设定/时间线/风格/写作铁律是否就绪。"
       },
       {
         "plugin": "webnovel-studio",
         "slug": "webnovel-studio:章节审查",
         "name": "章节审查",
         "trigger": "写完每章后触发。当需要检查单章质量（细纲一致性/人物行为/设定使用/写作质量/字数达标/结尾审查/内容合规性），或修改后需要重新审查通过时使用。不通过→修改→重审闭环，合规问题零容忍。"
+      },
+      {
+        "plugin": "webnovel-studio",
+        "slug": "webnovel-studio:整体架构",
+        "name": "整体架构",
+        "trigger": "项目启动或彻底重建时使用。当需要创建文件夹结构、通过启发式提问明确小说核心定位、生成CLAUDE.md和进度文件时触发。"
       }
     ]
   }

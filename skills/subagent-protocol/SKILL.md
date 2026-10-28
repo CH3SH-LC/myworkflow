@@ -1,5 +1,5 @@
 ---
-name: 子智能体执行协议
+name: 成员与执行者协作协议
 description: Use when 你被主智能体通过 Agent 工具创建为子智能体，且满足二者之一——prompt 中包含 task-id，或工作目录中存在 .task-manifest/ 合约目录（无 task-id 时的自举入口）
 ---
 # 子智能体执行协议（L2 执行者 + L3 团队协作协议）
@@ -37,6 +37,8 @@ description: Use when 你被主智能体通过 Agent 工具创建为子智能体
 
 **判定话术**：拆出来的每份「单独交给别人也不成为可用成果」= 阶段接力，违规；每份能独立交付/验收 = 合法。
 
+**两个常见绕过不算合法**：① **审查 / 汇总 / 接口文档 / 测试报告不是独立交付物**——不得作为横向切分的产物；② **同一交付物跨轮次串行接力**（第一轮 A 做一半、第二轮 B 接着做）同样违规，必须**一个 owner 一次做完**。
+
 ## 最小任务包（派发方必须写全）
 
 派发 leaf 的 brief 必须包含以下七项，缺项 leaf 应直接向 owner 要，不猜测：
@@ -54,6 +56,12 @@ description: Use when 你被主智能体通过 Agent 工具创建为子智能体
 - **produced**：执行者交回产物与回执（只有产物路径不算完成）。
 - **verified**：有真实执行证据（命令 + exit code + 产物哈希/关键输出）。
 - **accepted**：owner 复核证据后才算完成；idle、超时、非空完成文件都不是完成。
+
+## 极端与异常场景（必须给出明确指引）
+
+- **无可用工具（subagent / 团队工具缺失或不可用）**：先用替代手段——当前上下文直接做、脚本/命令行、只读查询或已有文件；确实无法执行 → 明确回 `BLOCKED`，写清缺什么工具/权限、影响面、已完成部分，交回 owner 或用户决策；**不许编造结果、不许假装完成**。
+- **用户坚持阶段拆分**：这是与「禁止阶段拆分」硬规则冲突的要求——**拒绝**并说明「拆出的每份不能独立交付/验收 = 阶段接力」，给出可执行的横向重排方案（按可独立交付产物切分、一个 owner 端到端做完）；用户仍坚持时，记录为已接受风险并请其明确确认，不得静默照做。
+- **中途发现级别判断错误**：允许并鼓励**重新判级**（L3 → L2/L1 回收，或 L2 → L3 升级）；已交付且已验收的产物不重做，只调整后续分配；重新判级要更新 mission/计划说明并告知相关 owner。
 
 ## 触发
 
@@ -87,7 +95,7 @@ description: Use when 你被主智能体通过 Agent 工具创建为子智能体
 
 ## 关联Skill
 
-输入 ← 读取「myworkflow:task-dispatch」产出的 task-contract.yaml 与 prompt 模板；输出 → 产出的 interface-declaration.md / self-check.md / completion.md 是「myworkflow:integration-verify」的验证输入。
+输入 ← 读取「myworkflow:task-dispatch」产出的 task-contract.yaml 与任务包（mission / leaf 任务包）；输出 → 产出的 interface-declaration.md / self-check.md / completion.md 是「myworkflow:integration-verify」的验证输入。
 
 ## 前置强制步骤
 

@@ -216,3 +216,9 @@ git branch --list main master
 - [ ] 跨模块兼容性无阻塞问题
 - [ ] 验证报告已生成
 - [ ] 需人工介入的项目已向用户报告
+
+### 证据口径映射（与 `myworkflow:subagent-protocol` 一致，不重复其长段）
+- **produced（回执）**：验证报告与修正记录已产出（路径 + 结论摘要）；只有报告路径不算完成。
+- **verified（可复核证据）**：自动层每项检查都有真实命令 + exit code + 关键输出；有产物 sha256/runId 时一并写入报告。
+- **accepted（owner 验收）**：判断层全过且报告落盘（`.task-manifest/verification-report.md`）才算通过；超时、无输出、非空文件都不算完成。
+- 修正轮次只是过程，不等于 accepted；轮次上限（≤3）用完仍不通过 → 标记需人工介入。

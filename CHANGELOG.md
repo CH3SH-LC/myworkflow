@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.1.1 — 2026-10-28
+
+体检整改：修复五路体检（A–E）确认的 F1–F16 问题；不夹带新功能，不改历史 tag 与提交历史。
+
+### 变更
+- 判级与拆分（F1–F4、F6–F7）：`task-router` 补「单个交付物但改动 ≥2 文件 → L2」「用户明确指定级别优先」与 L1 判据收紧；`task-dispatch` / `subagent-protocol` 补「审查/汇总/接口文档不是独立交付物」「同一交付物跨轮次串行接力同样违规」；L2→L3 升级判据三技能统一；极端场景（无可用工具、用户坚持阶段拆分、中途重新判级）补指引；清理「prompt 模板」「滚动补位」旧术语。
+- 证据口径（F5）：`agent-dev-loop` / `integration-verify` / `root-cause-analysis` / `real-world-verify` 补 produced（回执）/ verified（可复核证据）/ accepted（owner 验收）三层映射与证据最低要求（命令 + exit code + 产物路径/sha256 或 runId）。
+- 命名与说明（F8–F10）：`registry-maintain` 示例 slug 修正为 `myworkflow:storage-analyzer`；locale 6 处技能名与 `component.displayName` 对齐；`subagent-protocol` displayName → 「成员与执行者协作协议」；`cordis.patch.yml` 注释引用修正。
+- Host 与门禁（F11–F12）：member 段宽度门禁措辞修正（self 执行宽度门禁已关闭、派发宽度守卫仍在）；`.migration/verify-tier-model.mjs` 增加角色段工具极性断言。
+- 仓库文档与配置（F13–F15）：CHANGELOG 补 `v2.0.1` 条目；README 安装示例版本与 references 清单补全；`config/special-skills.json` inventory 刷新为 24 技能；hooks 版本/模型口径同步到 2.1.x。
+- 仓库 18 个 `skills/*/SKILL.md` 从 components 重新生成（正文 = 组件 `fullBody`，UTF-8 无 BOM、LF）；6 个非 DSH 技能不动；`plugin.json` ×2 版本 → 2.1.1。
+
+### 验证
+- `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs --all` PASS；registry 18/18、errors=[]。
+- 18 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（LF 归一）；CHANGELOG 版本节数量与 release 数量一致。
+
 ## v2.1.0 — 2026-10-28
 
 三级协作模型升级：技能内容与 Host 角色提示词统一为 L1 单智能体 / L2 子智能体 / L3 智能体团队三级模型，明确禁止同一交付物的阶段拆分。
@@ -13,6 +29,18 @@
 ### 验证
 - `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs` PASS（组件结构 + 三级模型内容断言 + Host 角色段断言 + 版本/registry/注入阈值）。
 - 18 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（LF 归一）。
+
+## v2.0.1 — 2026-10-28
+
+修复 v2.0.0 发布提交的误删与版本表述问题（普通前进提交，不改写历史、不强推；`v2.0.0` tag 保持原位）。
+
+### 变更
+- R5：恢复 v2.0.0（`0ba4099`）误删的 3 个非 DSH references（与 `1b87e72` 原始 blob 逐字节相同）：`skills/skill-authoring/references/persuasion-principles.md`、`skills/storage-analyzer/references/macos.md`、`skills/storage-analyzer/references/windows.md`。
+- R6：plugin / hooks / README 的现行版本表述改为 2.0.0 体系；两处 package 版本字段仍为 2.0.0。
+- `v2.0.0` 内容零回退：18 个 DSH 技能与 `skills/**` 一个字节未动；v2.0.0..本提交差异仅为上述 3 个恢复文件 + 6 个版本表述修正文件。
+
+### 验证
+- GitHub compare `0ba4099...e6f3049` 恰为 9 个文件（3 added references + 6 modified），无其它增删；tag `v2.0.1` → `e6f3049`。
 
 ## v2.0.0 — 2026-10-28
 

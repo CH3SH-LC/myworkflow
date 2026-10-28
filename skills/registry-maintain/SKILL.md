@@ -18,7 +18,7 @@ config/special-skills.json
 └── inventory    （自动生成，勿手改）扫描全部已注册插件技能的清单
 ```
 
-- **slug 格式**：`<plugin>:<skill目录>`（如 `myworkflow-extra:storage-analyzer`）
+- **slug 格式**：`<plugin>:<skill目录>`（如 `myworkflow:storage-analyzer`）
 - **内置技能**（dataviz、claude-api 等 Claude Code 自带、不在插件目录）：用 `builtin:<name>` 约定引用，扫描不会覆盖
 - **哪些插件会被扫进 inventory**：只扫 `installed_plugins.json` 里登记了 `installPath` 且目录真实存在的插件。放在 `plugins/` 下但未注册的目录不会进表。
 

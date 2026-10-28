@@ -96,3 +96,9 @@ description: Use when 智能体闭环开发 阶段3 遇到 bug 需定位根因�
 - [ ] flaky 已按技术 E 算统计置信度
 - [ ] 专项技术产出已整合进报告对应章节
 - [ ] 本 skill 未产出修复代码（排查和修复分离）
+
+### 证据口径映射（与 `myworkflow:subagent-protocol` 一致，不重复其长段）
+- **produced（回执）**：根因报告/证据包已产出（路径 + 阶段 6 交接清单）；只有报告路径不算完成。
+- **verified（可复核证据）**：因果链每层有证据（命令 + exit code + 日志/快照 sha256，或 runId）；超时、无输出、非空文件都不算证据。
+- **accepted（owner 验收）**：上面「完成标志」逐条核对（6 阶段走完、≥1 假设经证伪、≥2 独立证据、扫描 ≥3 维度）后才算完成。
+- 只查不修：本 skill 的 accepted 不等于修复完成，修复由 agent-dev-loop 验收。
