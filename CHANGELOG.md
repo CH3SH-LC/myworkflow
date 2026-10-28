@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.1.0 — 2026-10-28
+
+三级协作模型升级：技能内容与 Host 角色提示词统一为 L1 单智能体 / L2 子智能体 / L3 智能体团队三级模型，明确禁止同一交付物的阶段拆分。
+
+### 变更
+- 10 个技能正文按三级模型重写：`task-router`（第一步先判工作级别）、`lightweight-dispatch`（L2 操作规程 + 升级 L3 判据）、`task-dispatch`（L3 拆分契约，含禁止阶段接力的正例/反例）、`subagent-protocol`（协作协议：L2 子智能体 + leader/member/leaf 角色）、`agent-dev-loop` / `integration-verify` / `root-cause-analysis` / `deep-research` / `lessismore` / `real-world-verify`（协作表述改为三级模型口径）；保留各技能原有方法论。
+- Host 三段角色提示词（`src/host/skills.js` 文本常量）按三级模型重写：leader 只定目标与边界/建团队/下 mission/监督验收，不亲自产出；member 为持久域 owner、端到端完成；leaf 为最小任务包执行者；三段均写明 leader 与 member 可开 leaf、leaf 不可。
+- 仓库 18 个 `skills/*/SKILL.md` 从 components 重新生成（正文 = 组件 `fullBody`，UTF-8 无 BOM、LF）；6 个非 DSH 技能保持不动。
+- `plugin.json` ×2 版本 → 2.1.0。
+
+### 验证
+- `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs` PASS（组件结构 + 三级模型内容断言 + Host 角色段断言 + 版本/registry/注入阈值）。
+- 18 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（LF 归一）。
+
 ## v2.0.0 — 2026-10-28
 
 回退到 9 月内容后重新发布的正式 2.0：18 个技能正文恢复为 2026-09-17（preview 分支 `787cf78`）的原文，同时保留 DSH 原生组件化与全 core 注入。

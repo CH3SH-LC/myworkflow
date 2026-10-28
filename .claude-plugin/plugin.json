@@ -1,7 +1,7 @@
 {
   "name": "myworkflow",
-  "version": "2.0.0",
-  "description": "MyWorkflow — 2.0：9 月内容 + DSH 原生。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
+  "version": "2.1.0",
+  "description": "MyWorkflow — 2.1：三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）+ 9 月内容 + DSH 原生。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
   "author": {
     "name": "Lenovo",
     "email": "user@localhost"

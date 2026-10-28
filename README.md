@@ -2,13 +2,13 @@
 
 AI 辅助开发全流程技能包 —— 为 Claude Code 提供从需求理解到代码交付的完整工作流。
 
-**当前版本：v2.0.0（DSH 原生 + 9 月内容；10 月 v2.0.0-preview 已放弃）**
+**当前版本：v2.1.0（三级协作模型 + DSH 原生 + 9 月内容；10 月 v2.0.0-preview 已放弃）**
 
 ## 设计理念
 
 MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 阶段感知锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入"存在 5 类任务"的认知 + 开发阶段→skill 链（阶段3 遇 bug→root-cause、阶段4→real-world-verify、提交→github-collab 等），并指引疑似专项任务查询注册表。
 
-v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布：
+v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布；v2.1.0（10 月 28 日）升级三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）：
 
 | 问题（1.0.x–1.1） | 方案（2.0.0） |
 |-----------|----------------|
@@ -130,8 +130,8 @@ SessionStart Hook（~200 字）── 分类概念锚点 + 注册表自动刷新
 
 ```
 myworkflow/
-  plugin.json                  # marketplace 发布清单（v2.0.0）
-  .claude-plugin/plugin.json   # 运行时发现元数据（v2.0.0）
+  plugin.json                  # marketplace 发布清单（v2.1.0）
+  .claude-plugin/plugin.json   # 运行时发现元数据（v2.1.0）
   README.md
   PROGRESS.md                  # 完整开发进度
   PROGRESS-LITE.md             # 进度速查
