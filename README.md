@@ -2,13 +2,13 @@
 
 AI 辅助开发全流程技能包 —— 为 Claude Code 提供从需求理解到代码交付的完整工作流。
 
-**当前版本：v2.1.1（三级协作模型 + DSH 原生 + 9 月内容；10 月 v2.0.0-preview 已放弃）**
+**当前版本：v2.2.0（三级协作模型语义修正 + 等待纪律 + 技能精简 15 技能；10 月 v2.0.0-preview 已放弃）**
 
 ## 设计理念
 
-MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 三级协作判级锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入工作级别判定（L1 单智能体 / L2 子智能体 / L3 团队）+ 5 类任务认知 + 加载时机说明（"阶段"只是加载技能的时机，禁止把同一交付物按阶段拆给多个执行者），并指引疑似专项任务查询注册表。
+MyWorkflow 将 AI 辅助开发拆解为 **21 个自包含技能**，采用 **扁平化架构 + 三级协作判级锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入工作级别判定（L1 单智能体 / L2 子智能体 / L3 团队）+ 5 类任务认知 + 加载时机说明（"阶段"只是加载技能的时机，禁止把同一交付物按阶段拆给多个执行者），并指引疑似专项任务查询注册表。
 
-v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布；v2.1.0（10 月 28 日）升级三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）；v2.1.1（10 月 28 日）体检整改（F1–F17：判级/禁止阶段接力/证据口径/命名与仓库文档配置）：
+v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布；v2.1.0（10 月 28 日）升级三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）；v2.1.1（10 月 28 日）体检整改（F1–F17：判级/禁止阶段接力/证据口径/命名与仓库文档配置）；v2.2.0（10 月 29 日）修正 L2/L3 语义与 member/leaf 区别、新增禁止回合内等待与 30s 后台纪律、删除 3 个技能（组件 18→15，仓库技能 24→21）：
 
 | 问题（1.0.x–1.1） | 方案（2.0.0） |
 |-----------|----------------|
@@ -28,14 +28,14 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
     ┌────────────┼─────────────┐
     ▼            ▼             ▼
  编程开发      调研/文稿      任务编排
- (7 skills)   (4 skills)     (6 skills)   +  电脑专项(2) + 行为准则/辅助(3)
+ (7 skills)   (4 skills)     (6 skills)   +  电脑专项(2) + 行为准则/辅助(2)
     │            │             │
     └────────────┴─────────────┘
       疑似专项 → 查 config/special-skills.json → 调用对应 skill
           Skill 互相引用（myworkflow: 前缀）
 ```
 
-### 24 个技能
+### 21 个技能
 
 | 组 | 技能（目录名 / 显示名） | 用途 |
 |----|------------------------|------|
@@ -48,8 +48,6 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 | | `github-collab` Github协作 | 隔离开发→提交→PR→审查→合并 |
 | **调研/文稿/学习** | `deep-research` 深度调研 | 多源并行搜索→交叉验证→强制 .md 落盘报告 |
 | | `humanizer-zh` | 去除中文文本 AI 痕迹 |
-| | `write-prose` 文稿写作 | 从零产出中文成稿（文章/文案/报告/演讲稿/周报/邮件） |
-| | `polish-prose` 文稿润色 | 诊断已有原稿，按最小充分修改力度分级（去 AI 味 / 润色） |
 | | `pdf-to-markdown` | 扫描版 PDF OCR → Markdown + LaTeX 公式还原 |
 | | `self-study-guide` | STEM 教材/论文 → 讲师模式/导师模式学习讲义 |
 | **任务编排** | `task-router` 任务分类入口 | 第一步判工作级别（L1 单智能体 / L2 子智能体 / L3 团队），再按 5 类任务给 skill 路径 |
@@ -60,7 +58,6 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 | | `req-clarify` 需求澄清 | 可被任何 skill 调用的澄清工具 |
 | **电脑专项** | `storage-analyzer` 电脑清理 | 只读扫描磁盘 → 三色分级 → 交互式 HTML 报告（适配自卡兹克） |
 | | `file-organize` 电脑整理 | 编号分类文件夹维护（参考 D:\CH3SH），移动需确认 |
-| **行为准则/辅助** | `anti-sycophancy` 反谄媚 | 通用行为准则：质疑一切、技术诚实、证据驱动 |
 | | `lessismore` | AI 思考与协作的"少即是多"准则 |
 | | `skill-authoring` 辅助写技能 | 用 TDD 方法创建、优化、审查 skill |
 
@@ -78,7 +75,7 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
    "myworkflow@local": [{
      "scope": "user",
      "installPath": "C:\\Users\\Lenovo\\.claude\\plugins\\myworkflow",
-     "version": "2.1.1"
+     "version": "2.2.0"
    }]
    ```
 3. 在 `~/.claude/settings.json` 的 `enabledPlugins` 中启用：
@@ -89,7 +86,7 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
 
 ### 验证安装
 
-启动新的 Claude Code 会话，技能列表中应出现全部 24 个 `myworkflow:*` 技能；SessionStart 时注入分类概念锚点：
+启动新的 Claude Code 会话，技能列表中应出现全部 21 个 `myworkflow:*` 技能；SessionStart 时注入分类概念锚点：
 > 直接按用户请求调用匹配的 Skill 完成工作；没有匹配的 skill 就自己完成。最多澄清 1 个关键问题。任务分 5 类：代码编写 / 文稿撰写 / 深度调研 / 专项任务 / 简单问答。疑似专项任务时，查 myworkflow 插件的 config/special-skills.json 找对应 skill。
 
 ## 工作流
@@ -130,8 +127,8 @@ SessionStart Hook（~260 字）── 级别判定 + 分类概念锚点 + 注册
 
 ```
 myworkflow/
-  plugin.json                  # marketplace 发布清单（v2.1.1）
-  .claude-plugin/plugin.json   # 运行时发现元数据（v2.1.1）
+  plugin.json                  # marketplace 发布清单（v2.2.0）
+  .claude-plugin/plugin.json   # 运行时发现元数据（v2.2.0）
   README.md
   PROGRESS.md                  # 完整开发进度
   PROGRESS-LITE.md             # 进度速查
@@ -141,7 +138,7 @@ myworkflow/
     registry-scan.sh           # 专项注册表扫描生成器（幂等，~1s）
   config/
     special-skills.json        # 专项注册表（categories 人工 + inventory 自动）
-  skills/                      # 24 个技能，每技能一个 SKILL.md
+  skills/                      # 21 个技能，每技能一个 SKILL.md
     task-router/               # 任务分类入口（先判级别）
     agent-dev-loop/            # 智能体闭环开发（含 bug 修复路径）
       references/testing-anti-patterns.md
@@ -162,15 +159,10 @@ myworkflow/
     subagent-protocol/         # 成员与执行者协作协议
     integration-verify/        # 集成验证与修正
     req-clarify/               # 需求澄清
-    polish-prose/              # 中文成稿润色（去 AI 味）
-      references/before-after-zh.md
-    write-prose/               # 中文成稿写作
-      references/style-profiles.md
     storage-analyzer/          # 电脑清理（卡兹克适配，含 scripts/ 与 references/）
       references/macos.md
       references/windows.md
     file-organize/             # 电脑整理
-    anti-sycophancy/           # 反谄媚
     lessismore/                # 少即是多（行为准则）
     skill-authoring/           # 辅助写技能
       references/persuasion-principles.md

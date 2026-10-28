@@ -100,7 +100,7 @@ gh pr create --title "<type>: <简短描述>" --body-file <pr-body-file> --base 
 2. 用 `/code-review` 或手动按维度审查：**正确性**（逻辑/边界/错误处理）、**安全性**（注入/敏感数据/权限）、**可维护性**（命名/结构/注释）、**变更范围**（无无关改动/改动最小化）、**测试覆盖**（关键路径有测试）。
 3. 提交意见：行级评论建议在 GitHub Web 的 Files Changed 视图进行（`gh pr review` 不支持 `-f` 指定文件）；整体评论 `gh pr review <N> --approve` / `--request-changes -b "..."` / `--comment -b "..."`；复杂审查 `gh pr view <N> --web`。
 
-**作为被审查者**（遵循「myworkflow:anti-sycophancy」——验证后再改，不盲目接受）：
+**作为被审查者**（先验证再行动——验证后再改，不盲目接受）：
 1. 读反馈：`gh pr view <N> --comments`。
 2. 逐条处理：正确的建议 → 修改并 push 更新 PR；技术上不准确的建议 → 礼貌解释为何不改（用代码/文档引用作证据）；主观偏好（无技术优劣）→ reviewer 坚持则接受，有理由坚持自己方案则礼貌说明；不清楚的建议 → 请 reviewer 澄清。
 3. 响应：改完 `git add + commit + push`，PR 自动更新，通知 reviewer 重新审查。

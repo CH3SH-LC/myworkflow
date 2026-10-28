@@ -46,8 +46,8 @@
     ]
   },
   "inventory": {
-    "updatedAt": "2026-10-28T19:10:50",
-    "count": 41,
+    "updatedAt": "2026-10-28T23:58:59",
+    "count": 38,
     "skills": [
       {
         "plugin": "claude-code-setup",
@@ -99,12 +99,6 @@
       },
       {
         "plugin": "myworkflow",
-        "slug": "myworkflow:anti-sycophancy",
-        "name": "反谄媚",
-        "trigger": "Use when 检测到以下红旗场景时自动激活——用户提出技术上不合理的需求、要求跳过必要步骤（测试/安全审查/错误处理）、给出有问题的代码建议、想走捷径、或任何可能引入 bug/安全漏洞/技术债务的请求"
-      },
-      {
-        "plugin": "myworkflow",
         "slug": "myworkflow:deep-research",
         "name": "深度调研",
         "trigger": "Use when 用户需要深度、多来源、经事实验证的研究报告"
@@ -150,12 +144,6 @@
         "slug": "myworkflow:pdf-to-markdown",
         "name": "pdf-to-markdown",
         "trigger": "Extract content from scanned/image-based PDFs using OCR, then reconstruct formulas, equations, and technical notation into proper LaTeX using contextual reasoning. Use this skill whenever the user asks to: extract text from scanned PDFs, OCR a PDF, convert scanned textbook/document pages to Markdown, reconstruct formulas/symbols from OCR output, digitize a physical document containing equations, convert image-based PDF to Markdown with LaTeX, or process scanned technical/scientific content. Works with any language supported by Tesseract OCR."
-      },
-      {
-        "plugin": "myworkflow",
-        "slug": "myworkflow:polish-prose",
-        "name": "文稿润色",
-        "trigger": "Use when 已有一篇中文成稿需要修改或诊断"
       },
       {
         "plugin": "myworkflow",
@@ -228,12 +216,6 @@
         "slug": "myworkflow:task-router",
         "name": "任务分类入口",
         "trigger": "Use when 拿不准请求属于哪类任务、该用哪个 skill、疑似专项任务时查表，或在同一会话内从一类任务切到另一类需要确认路径时"
-      },
-      {
-        "plugin": "myworkflow",
-        "slug": "myworkflow:write-prose",
-        "name": "文稿写作",
-        "trigger": "Use when 从零产出一篇中文文稿——只有主题、意图或散材料，还没有成稿"
       },
       {
         "plugin": "skill-creator",

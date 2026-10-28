@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.2.0 — 2026-10-29
+
+协作模型语义修正 + 等待纪律 + 技能精简：修正 L2/L3 定义与 member/leaf 区别，新增「禁止在自己回合内等待」与 30 秒后台纪律，删除 3 个技能（组件 18→15，仓库技能目录 24→21）。
+
+### 变更
+- **协作语义修正**（契约 §1）：L2 = 一个可独立完整执行的交付单元（有明确输入/产出、可独立验收，由一个执行者端到端做完）；L3 = 用于大型长程任务，把超大任务切成若干相互独立部分，成员各自独立完成再沟通整合；明确「团队里的每个 member ≈ 一个 L2」。member 与 member 可直接相互发消息（任务切分不可能一开始就完美，交叉/重叠/接口变化由成员直接协商；leader 只在边界冲突/目标变更/验收标准变更时介入）。member 与 leaf 的本质区别（寿命绑定任务 vs 长期存在复用、职责是一个任务 vs 一个领域）写入 `task-router` / `task-dispatch` / `subagent-protocol`；禁止阶段拆分继续保留并与「member 直接沟通」共同出现。
+- **等待与阻塞纪律**（契约 §2）：leader 禁止自己产出交付物；member 基本不自己工作（派 leaf 执行 + 自己验收整合，只有极小单文件改动可自己做）；leader 与 member 都**禁止在自己的运行回合中等待** leaf/subagent/其他 member——正确做法是「发起 → 输出本轮结论 → 结束回合」，靠二次唤醒继续；新增 **30 秒硬上限**：不能保证 30 秒内跑完的命令一律放后台任务或交给 leaf，不在回合内同步等待。
+- **技能精简**（契约 §3）：删除 `write-prose` / `polish-prose` / `anti-sycophancy` 三个技能（组件 18→15）；相关场景改写为正确替代路径（纯文稿写作由当前智能体直接完成，不再设专门技能；「先验证再行动、发现红旗给可执行替代方案」并入 `agent-dev-loop` 验证门禁与 `req-clarify` 确认规则）；三层证据口径（produced / verified / accepted）不变。
+- 仓库 15 个 `skills/*/SKILL.md` 从 components 重新生成（正文 = 组件 `fullBody`，UTF-8 无 BOM、LF）；删除 3 个已下线技能目录，仓库技能目录 **24→21**（15 DSH + 6 非 DSH）；6 个非 DSH 技能保持不动。
+- `plugin.json` ×2 版本 → 2.2.0；`config/special-skills.json` inventory 刷新为 21 个 myworkflow 技能；README 技能表/目录结构/references 清单同步；hooks SessionStart 注入文本中已删除技能引用改为「当前智能体直接完成」。
+
+### 验证
+- `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs --all` PASS（15 技能、语义断言、等待纪律断言）；registry skills=15、errors=[]。
+- 15 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（LF 归一）；活跃文件对 write-prose / polish-prose / anti-sycophancy 零残留（历史记录与 2.2 之前的 CHANGELOG 条目除外）。
+
 ## v2.1.1 — 2026-10-28
 
 体检整改：修复五路体检（A–E）确认的 F1–F17 问题；不夹带新功能，不改历史 tag 与提交历史。
