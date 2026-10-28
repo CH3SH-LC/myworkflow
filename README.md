@@ -78,7 +78,7 @@ v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦�
    "myworkflow@local": [{
      "scope": "user",
      "installPath": "C:\\Users\\Lenovo\\.claude\\plugins\\myworkflow",
-     "version": "3.1.0"
+     "version": "2.0.0"
    }]
    ```
 3. 在 `~/.claude/settings.json` 的 `enabledPlugins` 中启用：

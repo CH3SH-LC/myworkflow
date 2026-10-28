@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MyWorkflow v4 — SessionStart 注入
+# MyWorkflow v2.0.0 — SessionStart 注入
 # 主智能体：阶段感知锚点（分类概念 + 阶段→skill 链）+ 注册表自动刷新
 # 子智能体：一行协议锚点（不扫描注册表）
 set -uo pipefail

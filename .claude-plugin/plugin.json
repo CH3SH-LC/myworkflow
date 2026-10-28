@@ -1,7 +1,7 @@
 {
   "name": "myworkflow",
   "version": "2.0.0",
-  "description": "MyWorkflow — v4：扁平化 + 阶段感知锚点 + 专项注册表。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
+  "description": "MyWorkflow — 2.0：9 月内容 + DSH 原生。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
   "author": {
     "name": "Lenovo",
     "email": "user@localhost"
