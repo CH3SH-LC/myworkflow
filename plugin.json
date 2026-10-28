@@ -1,7 +1,7 @@
 {
   "_comment": "此文件用于 marketplace 发布清单。运行时插件发现由 .claude-plugin/plugin.json 负责（hooks 和 skills 通过目录结构自动发现）。",
   "name": "myworkflow",
-  "version": "4.0.0",
+  "version": "2.0.0",
   "description": "MyWorkflow — v4：扁平化 + 阶段感知锚点 + 专项注册表。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
   "author": "Lenovo",
   "license": "MIT",

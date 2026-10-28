@@ -1,139 +1,25 @@
 ---
 name: 任务分类入口
-description: Use when 不确定请求属于开发/调研/文稿/润色/专项/简单问答哪一类，或同一会话内要切换任务类型时加载。
+description: Use when 拿不准请求属于哪类任务、该用哪个 skill、疑似专项任务时查表，或在同一会话内从一类任务切到另一类需要确认路径时
 ---
+# 任务分类速查
 
-## 核心流程：读 catalog → 按交付物定类 → 加载对应技能
+会话入口是 hook：它在启动时注入 5 类任务的分类概念与阶段链。本表是**备用速查**，用于两种场合——拿不准归哪类时，或长会话内切换任务类型、上下文里已经堆了很多别的东西时。
 
-**何时加载**：请求类型不明、拿不准该加载哪个技能，或长会话里要从一类任务切到另一类时。**不加载**：请求已明确对应某个技能（直接按名加载）、纯事实问答与闲聊。
+| 请求类型 | 走 |
+|---|---|
+| 代码 / 改文件 / 重构 | `Skill("myworkflow:agent-dev-loop")` |
+| 文稿 / 从零写作 | `Skill("myworkflow:write-prose")` |
+| 文稿 / 润色 / 改写 / 去 AI 味 | `Skill("myworkflow:polish-prose")` |
+| 深度调研 | `Skill("myworkflow:deep-research")` |
+| 疑似专项任务 | 查 `config/special-skills.json` → 命中则调用对应 skill |
+| 简单问答 / 其它 | 直接回答 |
 
-**硬步骤**
-1. **读现场 catalog**：分类依据只有两处：当前会话角色段与现场 catalog；用 `skill(name="myworkflow-xxx")` 或读 `components/<name>/component.json` 确认 whenToUse → 不靠记忆，也不扫仓库根冻结的 `skills/` 基线。
-2. **按交付物定类**（先看交付物形态，再看动词）：要落盘的代码或文件变更 = 代码 / 改文件 → agent-dev-loop；尚不存在的文稿 = 文稿 → write-prose；已有成稿要改文风或诊断 = 润色 → polish-prose；需多源交叉与证据链 = 调研 → deep-research；catalog 里 whenToUse 命中 = 专项；一次回答即可闭环 = 简单问答 → 直接答。
-3. **分工技能边界**：多独立交付物横向拆分 → task-dispatch；N 个可平铺无依赖小项 → lightweight-dispatch；团队协作协议 → subagent-protocol → 按交付物结构与协作形态选，不按人数或语感。
-4. **处理易混与复合**：只解释代码不落盘归简单问答；贴草稿说"改改"归润色，给主题说"写完顺手润一下"归文稿；同时含代码与文稿按主要交付物选一类，两份独立产物才各配一个 owner → 以交付物为界，不以动词为界。
-5. **简单任务的边界**：一次回答即可闭环且无需持久化时，不建团队、不下模块委托、不提交工作项、不建 goal。
-6. **切换类型**：重新按名加载目标技能，按新类型组织工作，不为"换话题"本身发问 → 只有新旧路径取舍改变决策且查不到时才 ask_user_question 一次。
+## 不在这张表里的技能
 
-**完成判据**：已选定技能并给出按名加载的实际动作与归类依据（证据=技能名 + catalog 字段或组件路径）；简单问答直接回答。拿不准再查一次 catalog，不凭印象归类。
+以下技能不参与任务分类，但在上表任一流程中都可能被调用：
 
-# 任务分类与路由
-
-## 分类概念的来源
-
-分类概念不来自任何外部注入，而是两处现成信息：
-
-1. **systemPrompt 的 leader / member / leaf 角色段** —— 决定当前会话能承担哪种编排强度（leader 建团队、给目标与边界并做全局集成；member 在自己的交付物内闭环；leaf 是成员启动的执行者）。
-2. **当前技能 catalog（原生 provider）** —— 以现场读取为准，不用记忆：用 `skill(name="myworkflow-xxx")` **按名加载**正文，或读磁盘清单 `packages/dsh-myworkflow-skills/components/<name>/component.json`（含 displayName / summary / whenToUse / parts 简介）。仓库根的 `skills/` 是**冻结的迁移基线**，只用于历史迁移比对，**不是运行入口、也不是 catalog 事实来源**。
-
-catalog 会变。任何一次分类前先看 catalog 里实际存在什么，再决定路由；本表只是速查。
-
-## 五类路由判定表
-
-| 请求类型 | 判定信号 | 路由 |
-|---|---|---|
-| 代码 / 改文件 / 重构 | 要落盘的代码或文件变更，含修 bug、加功能、改配置 | `skill(name="myworkflow-agent-dev-loop")` |
-| 文稿 / 从零写作 | 交付物是一篇尚不存在的文稿，用户给的是主题与要求 | `skill(name="myworkflow-write-prose")` |
-| 文稿 / 润色 / 改写 / 去 AI 味 | 已有成稿，要改文风、结构、语气或诊断问题 | `skill(name="myworkflow-polish-prose")` |
-| 深度调研 | 需要多源交叉、留证据链、给结论与不确定性 | `skill(name="myworkflow-deep-research")` |
-| 疑似专项任务 | catalog 里有 whenToUse 命中当前请求的技能 | 读该技能 frontmatter 后 `skill(name="myworkflow-xxx")` |
-| 简单问答 / 其它 | 一次回答即可闭环 | 直接回答 |
-
-### 反例与易混情形
-
-| 看起来像 | 实际归 | 理由 |
-|---|---|---|
-| 「这段代码为什么这么写」 | 直接回答 | 只解释不落盘，不需要开发流程 |
-| 「帮我读一下这个文件再总结」 | 直接回答（必要时 web_search 查证） | 无写入、无交付物 |
-| 用户贴一段草稿说「改改」 | 润色 | 交付物是改后的成稿，不是新稿 |
-| 用户给主题并说「写完顺手润一下」 | 从零写作 | 主要交付物是尚不存在的文稿，润色是其中一步 |
-| 「查一下这个 API 的参数」 | 直接回答（web_search / web_fetch） | 单点事实，不需要证据包 |
-| 「这两个方案到底哪个好，给我依据」 | 深度调研 | 需多源交叉与可核查来源 |
-| 「帮我建个项目文档记一下」 | 先确认是否真需要落盘 | 简单问答默认不写项目文档 |
-| 请求里同时含代码与文稿 | 按主要交付物选一类 | 若确实两份独立产物，按横向交付合约各给一个 owner |
-
-判定顺序：**先看交付物是什么，再看动词**。动词「写 / 改 / 查」在两类之间都成立，交付物形态才是分界线。
-
-### 简单任务的边界
-
-简单问答与纯查证不走完整仪式：不建团队（`team_define`）、不下**模块委托**（`team_mission_assign`）、不提交工作项、不写项目文档、不建 goal。判断标准是「一次回答即可闭环且无需持久化」。
-
-## 切换任务类型时
-
-长会话里上下文已堆满别的内容，此时切换类型：
-
-1. 重新**按名加载**目标技能（`skill(name="myworkflow-<类型>")`），或读 `packages/dsh-myworkflow-skills/components/<name>/component.json` 确认它存不存在、何时用；**不要再用 glob 扫仓库根的 `skills/` 目录**——那只是冻结的迁移基线，不是运行入口、也不是事实来源；
-2. 直接按新类型组织工作，不必为「换话题」本身再问用户；
-3. 只有在新旧路径的取舍**真正改变决策**、且项目里查不到答案时，才用 ask_user_question 问一次。
-
-## 不在判定表里的技能
-
-以下技能不参与分类，但在上表任一流程中都可能被调用；具体是否存在、叫什么，以当前 catalog 现场读取结果为准：
-
-- **工具性**：需求澄清、质疑准则、输出克制、注册表维护
-- **团队协作**：任务的横向拆解与提交、轻量工作项、成员与执行者协议、集成验证
-- **项目管理**：项目初始化、项目维护
-- **代码细节**：根因分析、真实环境验证、协作流程
-
-## 横向交付合约
-
-路由到需要多人协作的任务时，按**可独立交付的产物**切分，而不是按阶段切分：
-
-- 交付物形态：module（模块）、object（对象）、evidence-package（证据包）。
-- **每份交付物由一个 owner 端到端负责**：调查 → 实现 → 自检 → 修复 → 验收。owner 拥有完整上下文，收尾修复也由同一 owner 完成。
-- **拒绝同一交付物的阶段接力**：「背景调查 → 设计 → 检查」「计划 → 编码 → 审查」这类切法把一份产物切成三个人，出现信息断点。
-- 已经按阶段分好的，给**横向重排建议**：先列出真正独立的产物，再把每个阶段的工作折叠回对应 owner 的闭环内。
-- 全局集成由 leader 与相关 owner 共同负责，不撤走前面的人、换一个没有上下文的审查员接管后半程。
-
-## 事件驱动滚动补位
-
-- 任一项结算，**常驻 Host 调度器立即补位**，不等同批其它任务。
-- 无全批屏障、无整层等待；慢任务不阻塞其它 ready 项。
-- **未 ready 不派发**；依赖未满足就先做别的 ready 项，不做空等。
-
-## 依赖与容量
-
-- 依赖**只允许存在于不同交付物之间**，同一交付物内部不允许拆成前后依赖的两半。
-- 每条依赖声明 **version + requires**：requires 是 published-interface（已发布的接口）或 verified-result（已验证的结果）。
-- 容量满额时**拒绝新的启动并保持其 ready 状态**（CAPACITY_FULL），不排队空等，也不用一次性旁路绕过上限。
-
-## 超时与失败
-
-- 超时先判断**进展与可恢复性**：有产出、可续跑、状态未知或暂停，都不等于失败。
-- 「状态未知 / 暂停」与「真正失败」严格分开；不得因超时就宣布失败，也不得无证据宣称成功。
-- 同一 owner 收尾修复；只有确认失败且交付物需要重做时，才重新分配该交付物。
-
-## 阻塞处理顺序
-
-1. 记录确切的失败、已尝试的动作、影响范围、以及**仍然可以做的部分**。
-2. 查已装服务、源码、现成工具、当前权限，判断是否本可自解。
-3. 能写适配器、接口或本地桥接补齐的，就地补齐。
-4. 局部阻塞时先做其它 ready 项，并把 blocker **精确挂到受影响的交付物**上，而不是笼统记一笔。
-5. 确实需要外部账号、人工决策或无法获得的资源，才标记 needs_user，并给出已尝试路径与最小下一步。
-
-不得固定「试三次就结束」，也不得无预算地无限重试同一失败；权限拒绝不可绕过。
-
-## 提问与授权
-
-- 用户已授权的任务中，可逆的开发与试错**不重复询问**。
-- 审批与扩权只有用户入口，模型没有等价工具，不要试图用别的路径代替。
-- 只在**真正改变决策且项目里查不到**时才提问，用 ask_user_question 一次问清。
-
-## 证据与结果分层
-
-- 证据诚实：区分「已核实 / 有来源」与「推测 / 未核实」；不夸大，不无证据声称「验证通过」。
-- 结果分层：简短结论 + 可核查的 evidence / artifact refs 进 parent，原始材料留在文件或子会话里。
-- 摘要必须含：来源、版本、遗漏、不确定性、未完成项。
-
-## 工具速查
-
-- 文件与终端：read、write、edit、glob、grep、pwsh
-- 技能加载：`skill(name="myworkflow-xxx")`
-- 建团队与委托：`team_define`（登记受管团队）、`team_member_create`（建持续存在的模块成员）、`team_mission_assign`（leader 下**模块委托**；不产生可调度项）、`team_layout`（1/2/4 窗与 pane 绑定）
-- 观察与等待：`team_snapshot`（团队/工作项/容量/诊断快照）、`team_wait`（先登记等待再核对，不忙轮询）
-- 成员侧自治：`team_plan_submit`（成员自己提交自己拥有的 work，`planRevision` CAS）、`team_dispatch_authorize`（授权派发）、`team_plan_cancel`（取消未来派发）、`team_subagent_start`（定向启动自己的执行者）、`team_member_inbox`（处理自己的事件）、`team_work_verify`（按验收条件核验）、`team_message`（成员间消息）
-- leaf 侧：`team_work_report`（交回结果）、`team_ask_owner`（只向自己的 owner 求助/回报）；`team_message` **对 leaf 不可用**
-- 停止与恢复：`team_interrupt`（`scope=turn` 只停目标执行者当前回合；`scope=members` 停成员回合并保留队列；`scope=team` 取消整队）、`team_recover`（重启/冷恢复对账）
-- 规划与目标：todo_write、create_goal、get_goal、update_goal、exit_plan_mode
-- 网络与提问：web_search、web_fetch、ask_user_question
-- 其它：present、job_list、job_output、job_kill、workflow
+- **工具性**：`req-clarify`（需求澄清）、`anti-sycophancy`（质疑准则）、`lessismore`（输出克制）、`registry-maintain`（注册表维护）
+- **子智能体系统**：`task-dispatch`、`lightweight-dispatch`、`subagent-protocol`、`integration-verify`
+- **项目管理**：`project-init`、`project-maintain`
+- **代码细节**：`root-cause-analysis`、`real-world-verify`、`github-collab`

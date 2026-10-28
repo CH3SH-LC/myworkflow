@@ -2,18 +2,18 @@
 
 AI 辅助开发全流程技能包 —— 为 Claude Code 提供从需求理解到代码交付的完整工作流。
 
-**当前版本：v4.0.0（扁平化 + 阶段感知锚点 + 专项注册表）**
+**当前版本：v2.0.0（DSH 原生 + 9 月内容；10 月 v2.0.0-preview 已放弃）**
 
 ## 设计理念
 
 MyWorkflow 将 AI 辅助开发拆解为 **24 个自包含技能**，采用 **扁平化架构 + 阶段感知锚点**：技能直接按 `description` 自动触发，无分类仪式、无路由 hop、无强制澄清链；SessionStart 注入"存在 5 类任务"的认知 + 开发阶段→skill 链（阶段3 遇 bug→root-cause、阶段4→real-world-verify、提交→github-collab 等），并指引疑似专项任务查询注册表。
 
-v3/v4 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构：
+v1.0.x–1.1 系列针对模型更换后的实际使用痛点做了系统性瘦身与重构；v2.0.0-preview（10 月 21 日）为失败的 DSH 对齐预览，v2.0.0（10 月 28 日）回退 9 月内容后正式发布：
 
-| 问题（v2/v3） | 方案（v4） |
+| 问题（1.0.x–1.1） | 方案（2.0.0） |
 |-----------|----------------|
 | SessionStart 注入 16KB 五分类仪式，后半段放弃遵守 | 注入精简到 ~260 字阶段感知锚点（5 类概念 + 阶段→skill 链） |
-| v3 拆掉执行期钩子后，后半程技能触发概率下降 | 锚点显式列出阶段链：阶段3 bug→root-cause、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh；注册表触发词不再截断 |
+| 1.0.2 拆掉执行期钩子后，后半程技能触发概率下降 | 锚点显式列出阶段链：阶段3 bug→root-cause、阶段4→real-world-verify、提交→github-collab、润色→humanizer-zh；注册表触发词不再截断 |
 | 强制"分类→2-5 轮提问→报告→确认"链路 | 技能按描述直接触发，最多澄清 1 个关键问题 |
 | 专项任务路由靠硬编码映射，易漂移 | 专项注册表 `config/special-skills.json`（自动扫描 + 人工分类） |
 | 修复 bug 独立成顶层 skill | 修复并入智能体闭环开发，找 bug 独立走 root-cause-analysis |
@@ -130,8 +130,8 @@ SessionStart Hook（~200 字）── 分类概念锚点 + 注册表自动刷新
 
 ```
 myworkflow/
-  plugin.json                  # marketplace 发布清单（v4.0.0）
-  .claude-plugin/plugin.json   # 运行时发现元数据（v4.0.0）
+  plugin.json                  # marketplace 发布清单（v2.0.0）
+  .claude-plugin/plugin.json   # 运行时发现元数据（v2.0.0）
   README.md
   PROGRESS.md                  # 完整开发进度
   PROGRESS-LITE.md             # 进度速查
