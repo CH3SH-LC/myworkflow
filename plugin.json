@@ -1,8 +1,8 @@
 {
   "_comment": "此文件用于 marketplace 发布清单。运行时插件发现由 .claude-plugin/plugin.json 负责（hooks 和 skills 通过目录结构自动发现）。",
   "name": "myworkflow",
-  "version": "2.2.1",
-  "description": "MyWorkflow — 2.2：三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）+ 9 月内容 + DSH 原生。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
+  "version": "2.3.0",
+  "description": "MyWorkflow — 2.3：每轮任务纪律 hook（长会话反漂移：每用户回合 pre-step 注入「skills 意识/弄清需求/遵循指令/去废话」四条）+ 三级协作模型（L1 单智能体 / L2 子智能体 / L3 团队）+ 9 月内容 + DSH 原生。技能直接按描述触发；开发类任务全程按阶段调 skill（root-cause/real-world-verify/github-collab 等）。",
   "author": "Lenovo",
   "license": "MIT",
   "hooks": {

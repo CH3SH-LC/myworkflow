@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.3.0 — 2026-10-29
+
+长会话反漂移：每轮「任务纪律」hook（Host 侧 `taskDiscipline` 配置 + 每用户回合 pre-step 注入固定四条文本；不改技能正文）。
+
+### 变更
+- 本地包 `package.json` / `README.md` → **2.3.0**；`verify-tier-model.mjs` 新增 2.3.0 机制断言（每用户回合 1 次且同回合不重复、文本含四要点且 ≤400 字符、`taskDiscipline` 默认值、全角色生效、关闭即 no-op、**不复活 `skillTrigger` 票据/TTL 门禁**）。
+- 仓库 `plugin.json` ×2 版本 → **2.3.0**（description 同步 2.3 口径）；README 当前版本 / 沿革 / 安装示例 / 目录树同步 2.3.0。
+- 15 个 DSH 技能正文、6 个非 DSH 技能、hooks、config、references、`plugin.json.skills` 数组均无改动（技能内容冻结在 2.2.1 状态；契约 §2 本轮不改正文）。
+
+### 验证
+- `node src/selfcheck.js`：PASS；`node .migration/verify-tier-model.mjs --all`：PASS（含 `host:task-discipline` 硬断言）；`node --test tests/*.test.mjs`：7/7 PASS。
+- 相对 v2.2.1（`2746ef9`）差异仅 `plugin.json`、`.claude-plugin/plugin.json`、`CHANGELOG.md`、`README.md` 四个文件。
+- `v2.3.0` annotated tag + 正式 release（releases = **13**）；v2.2.0 / v2.2.1 与全部历史 tag 不动。
+
 ## v2.2.1 — 2026-10-29
 
 补丁：收口 2.2.0 遗留的插件清单陈旧元数据（不涉及技能内容变更）。
