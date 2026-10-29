@@ -14,15 +14,15 @@ description: Use when 需要将代码变更推送到 GitHub、创建 PR、进行
 ## 设计决策
 
 - **worktree 隔离**：功能开发/bug 修复在独立 worktree 中进行，完成后合并回主分支。
-- **PR 驱动**：永远通过 PR 合入（不直接 push 到 main）。
-- **审查前置**：合并前必须通过 code review（自动化 + 人工）。
+- **PR 驱动**：全部改动经 PR 合入（不直接 push 到 main）；撤销已合并 PR 也用 revert 后走 PR。
+- **审查前置**：合并前必须通过 code review（自动化检查 + 审查者 Approve）；审查者可以是人或 agent，无独立审查者时须用户明确授权并记录。
 - **清理闭环**：合并后清理 worktree 和临时分支，不留垃圾。
 
 ## 执行流程
 
 ### 场景 A：从零开始——隔离开发
 
-**1. 创建隔离环境**（首选 worktree：主目录不受影响、每个 worktree 有独立 `.claude/` 上下文、完成后可一键清理）：
+**1. 创建隔离环境**（首选 worktree：主目录不受影响、开发与 main 互不干扰、完成后可一键清理）：
 ```bash
 git worktree add -b feature/<feature-name> ../<worktree-dir> origin/main
 ```
@@ -44,7 +44,7 @@ git checkout -b feature/<feature-name> origin/main
 - [ ] 敏感信息已排除（API key、密码、token、内部 URL）
 - [ ] 新文件有正确的许可证头（如项目要求）
 
-> 🚨 **强制验证门禁**：自检项全部勾选后**必须**调用「myworkflow:real-world-verify」执行真实验证。不通过 → 拒绝提交，先修复问题。此门禁不可跳过——即使改动"很小"也必须执行。若调用方（智能体闭环开发）已调用过且全部通过，可免重复调用，但须在自检中引用已有验证报告。
+> 🚨 **强制验证门禁**：自检项全部勾选后**必须**调用「myworkflow-real-world-verify」执行真实验证。不通过 → 拒绝提交，先修复问题。此门禁不可跳过——即使改动"很小"也必须执行。若调用方（智能体闭环开发）已调用过且全部通过，可免重复调用，但须在自检中引用已有验证报告。
 
 **2. 提交策略**：微小（单文件几行）→ 单个 commit；中等（多文件同主题）→ 单 commit 或 2-3 个逻辑分离的 commit（每 commit 做一件事）；大型（多功能跨模块）→ 多个可独立 review 的 commit，用 `git add -p` 精确控制。
 
@@ -53,7 +53,7 @@ git checkout -b feature/<feature-name> origin/main
 <type>(<scope>): <subject>   # 一句话概述，≤50 字符，中文
 <body>                        # 做了什么、为什么；每行 ≤72 字符
 ```
-type：`feat` 新功能 / `fix` Bug 修复 / `refactor` 重构（不改变行为）/ `docs` 文档 / `test` 测试 / `chore` 构建/工具/依赖。结尾加 `Co-Authored-By: Claude Code <noreply@anthropic.com>`。
+type：`feat` 新功能 / `fix` Bug 修复 / `refactor` 重构（不改变行为）/ `docs` 文档 / `test` 测试 / `chore` 构建/工具/依赖。结尾不写其它工具固定署名；需署名时用实际协作者/agent 身份（禁止冒充，E5）。
 
 **4. 提交并推送**（PowerShell 环境用 `@'...'@` here-string 替代 bash heredoc）：
 ```bash
@@ -73,17 +73,15 @@ git push -u origin feature/<feature-name>
 - `path/to/file` — [改了什么]
 
 ## 验证方式
-- [ ] [验证步骤 + 结果]
+- [ ] [验证命令 + exit code / runId，禁止编造结果（E5）]
 
 ## 回归风险
 - [可能受影响的区域 + 是否已检查]
 
 ## 截图/录屏（如适用）
-
----
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-（页脚为固定格式，随 PR 描述一并提交）
 ```
+
+描述末尾不写其它工具固定页脚；如需署名用实际 agent 身份。
 
 **2. 创建 PR**：
 ```bash
@@ -107,7 +105,7 @@ gh pr create --title "<type>: <简短描述>" --body-file <pr-body-file> --base 
 
 ### 场景 E：合并与清理
 
-**1. 合入条件**：至少 1 人审查通过（Approved）；CI 全部通过；所有 review 讨论已解决；无 merge conflict（有则先解决）。
+**1. 合入条件**：至少 1 名审查者（人或 agent）Approve；无独立审查者时须用户明确授权并记录；CI 全部通过；所有 review 讨论已解决；无 merge conflict（有则先解决）。
 
 **2. 合并方式**：默认 **Squash merge**（`gh pr merge <N> --squash`——main 保持干净，每个 PR 对应一个 commit），除非用户明确要求 Rebase merge（每个 commit 都有独立价值、保持线性历史，`--rebase`）或 Merge commit（保留分支痕迹，`--merge`）。
 
@@ -120,7 +118,7 @@ gh pr merge <PR-NUMBER> --squash --delete-branch   # --delete-branch 合并后�
 ```bash
 git checkout main && git pull
 git branch -d feature/<feature-name>
-git worktree remove ../<worktree-dir> --force   # 有未提交变更时；否则不加 --force
+git worktree remove ../<worktree-dir> --force   # 仅 E7：先记录未提交变更/原 SHA、说明回滚并取得确认；否则不加 --force
 git worktree prune                              # 残留 worktree 引用清理
 ```
 
@@ -129,17 +127,22 @@ git worktree prune                              # 残留 worktree 引用清理
 ## 特殊情况
 
 ### 解决 Merge Conflict
+改历史属 E7 高风险操作（见「高风险操作（E7 代价优先）」）：先备份原 SHA、说明回滚并取得用户确认。
 ```bash
 git fetch origin && git checkout main && git pull
-git checkout feature/<name> && git rebase origin/main
+git checkout feature/<name> && git branch backup/<name> HEAD   # E7 备份原 SHA
+git rebase origin/main
 # 编辑冲突文件 → git add → git rebase --continue；放弃 rebase：git rebase --abort
-git push --force-with-lease origin feature/<name>   # rebase 后必须强制推送
+git push --force-with-lease origin feature/<name>   # 只推本 feature 分支；禁止对 main force push
 ```
 
 ### 撤销一个 PR
 ```bash
-gh pr close <PR-NUMBER>                     # 关闭 PR（不删除分支）
-git revert -m 1 <merge-commit-SHA> && git push origin main   # 撤销已合并的 PR
+gh pr close <PR-NUMBER>                     # 关闭未合并的 PR（不删除分支）
+git checkout -b revert/<PR-NUMBER> origin/main
+git revert -m 1 <merge-commit-SHA>          # 生成反向提交，不直接改 main
+git push -u origin revert/<PR-NUMBER>
+gh pr create --title "revert: <PR 标题>" --base main
 ```
 
 ### 紧急 Hotfix
@@ -158,3 +161,26 @@ gh pr create --title "fix(urgent): <描述>" --base main
 **场景 C**：PR 描述完整（概述+文件+验证+回归）；`gh pr create` 成功；CI 通过。
 **场景 D**：审查覆盖正确性/安全性/可维护性/变更范围/测试覆盖；审查意见已提交（approve/request-changes/comment）；收到反馈则逐条处理并 push。
 **场景 E**：PR 已合并到 main；远程分支已删除；本地分支已删除；worktree 已清理（如使用）；已切回 main 并 pull 到最新。
+**E7**：涉及 force push/改历史/删除/tag/release 时，已备份原 SHA、取得确认并在回执写明回滚方式。
+## 高风险操作（E7 代价优先）
+
+按 E7 先评估代价与影响面：是否不可逆、影响哪些分支/提交/协作者、能否回滚；不确定按高风险处理。
+
+**1. 判定高风险**：改历史（rebase/amend/filter-branch/reset --hard）、force push、删除分支或 worktree、删除/移动 tag、release、撤销已合并 PR、覆盖远程分支。
+
+**2. 执行前三件事缺一不可**：
+- **备份**：记录原 SHA 并留 backup ref（`git branch backup/<name> <原 SHA>` 或 `git tag backup/<name> <原 SHA>`）。
+- **确认**：先向用户说明影响面与是否不可逆，取得明确同意；无用户在场禁止执行。
+- **回滚**：在 PR 描述或回执写明回滚命令（如 `git reset --hard <原 SHA>`、`git push --force-with-lease`）。
+
+**3. 预演优先**：先 dry-run 或在临时分支验证，再动真分支。
+
+**4. force push**：只用 `--force-with-lease`，只推自己的 feature 分支；禁止对 main 或共享分支 force push。
+
+**5. 删除**：分支用 `git branch -d`（不用 -D）；worktree 不加 `--force`，确需强制先记录未提交变更/原 SHA 并回执说明。
+
+**6. tag/release**：发布前确认目标 SHA 与版本号；不覆盖已发布 tag，确需移动/覆盖先备份旧 tag object 并写明回滚；发布后验证。
+
+**7. 撤销已合并 PR**：用 revert 生成反向提交，走 PR 合入，不直推 main。
+
+**8. 回执**：必须写影响面、是否不可逆、备份与回滚方式。

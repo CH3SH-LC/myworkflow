@@ -59,6 +59,7 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 - **R4 需求漂移**：新指令若改变目标 / 范围 / 验收标准 → **先确认再重排**，不硬续旧计划、不静默改范围。
 - **R5 失败不重复**：同一失败只允许**换条件**再试；记录已试路径与错误指纹，写清「这次为什么与上次不同」。
 - **R7 交接四样（给 / 要都必须齐）**：**已做 / 未做 / 证据（runId 或产物路径）/ 下一步 + 未解决项**；**接手方先复核再继续，不复核不动手**。
+- **R8 续接同样有技能意识**：续接回合与普通回合一样——先按「myworkflow-task-router」判 L1/L2/L3 并加载对应技能；Host 每轮注入的【每轮纪律】照常生效。
 - **与既有条款的关系**：本节不改变「禁止阶段拆分」「member 之间直接沟通」「禁止回合内等待」；续接中发现阶段接力倾向，仍按禁止阶段拆分处理。
 
 ## 谁能开 leaf
@@ -110,6 +111,8 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 - **不确定就标**：没核实过的写「未核实」并说明影响与核实方法；假设写「假设（未核实）」并去核实（E2），不把假设当结论。
 - **禁止编造**：不得补造 runId、exit code、sha256、行号、API 或测试结果（E5）；查不到就写查不到。
 - **关键事实交叉核对**两个独立来源（源码 + 实测 / 文档 + 运行输出），冲突时以可执行结果为准并记录冲突（E6）。
+- **自检问句（E4）**：动手 / 下结论前先问「这条规则或判断是猜的还是有出处？」无出处 → 先查；查不到写「假设（未核实）」并说明影响。
+- **代价优先（E7）**：改动 / 交付前评估代价与影响面（不可逆 / 影响范围 / 能否回滚）；高风险（删数据、改历史/tag、覆盖、发布、重启）先备份 + 预演 + 小步验证并给回滚路径，不确定按高风险处理。
 
 ## 极端与异常场景（必须给出明确指引）
 
@@ -129,13 +132,13 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 > 本协议同时服务 L2 与 L3：L2 由主智能体直接派 `subagent`（可不引用本模板，但必须满足最小任务包七项）；L3 由 **leader 或 member** 向 leaf 派发时必须写入下列模板。
 
 ```
-你必须遵循「myworkflow:subagent-protocol」。你的 task-id 是 {task-id}。
+你必须遵循「myworkflow-subagent-protocol」。你的 task-id 是 {task-id}。
 先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，
 再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，
 然后严格按 5 阶段协议工作：阶段 1：读取合约+确认输入。先读取 `.task-manifest/prompts/task-{task-id}.md` 了解任务，再读取 `.task-manifest/task-contract.yaml` 找到你的合约条目，逐一读取 inputs 中的文件路径。阶段 2-5 声明接口→产出实现→自检→完成报告。
 ```
 
-> **一致性约束**：本模板与 `skills/task-dispatch/SKILL.md`「第七步：下 mission / 启动 leaf」中的同名模板必须**逐字一致**，修改其一时必须同步另一处。（用 slug `myworkflow:subagent-protocol` 而非中文显示名——技能寻址走目录名，中文名不参与寻址，写 slug 才能稳定触发。）
+> **一致性约束**：本模板与 `components/myworkflow-task-dispatch/parts/11-p07-5.md`「第七步：下 mission / 启动 leaf」中的同名模板必须**逐字一致**，修改其一时必须同步另一处。（用 slug `myworkflow-subagent-protocol` 而非中文显示名——技能寻址走目录名，中文名不参与寻址，写 slug 才能稳定触发。）
 
 ### 自举保障（主智能体漏引用/漏 task-id 时）
 
@@ -149,7 +152,7 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 
 ## 关联Skill
 
-输入 ← 读取「myworkflow:task-dispatch」产出的 task-contract.yaml 与任务包（mission / leaf 任务包）；输出 → 产出的 interface-declaration.md / self-check.md / completion.md 是「myworkflow:integration-verify」的验证输入。
+输入 ← 读取「myworkflow-task-dispatch」产出的 task-contract.yaml 与任务包（mission / leaf 任务包）；输出 → 产出的 interface-declaration.md / self-check.md / completion.md 是「myworkflow-integration-verify」的验证输入。
 
 ## 前置强制步骤
 
@@ -165,7 +168,7 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 
 - 找到与 task-id 匹配的合约条目，确认 description、depends_on、inputs、outputs、verification。
 - 逐一读取 inputs 文件。
-- 关键规则：输入文件不存在→提问；输入不足→提问；依赖任务未完成→**记录依赖状态并结束本轮（或交回 owner），等二次唤醒再继续**，禁止在本回合空等/轮询（旧的「最多等 10 分钟」式等待已废止，见「等待与阻塞纪律」）；合约有歧义→提问。
+- 关键规则：输入文件不存在→提问；输入不足→提问；依赖任务未完成→**记录依赖状态并结束本轮（或交回 owner）**，等二次唤醒再继续；**禁止在本回合等待/空等/轮询/sleep**——任何不能保证 30 秒内跑完的命令一律放后台任务或派 leaf（见「等待与阻塞纪律」）；合约有歧义→提问。
 
 ### 阶段2：声明接口
 
@@ -173,7 +176,7 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 
 ```markdown
 # 接口声明 — {task-id}
-> 本声明是我的接口承诺。「myworkflow:integration-verify」将据此验证我的产出。
+> 本声明是我的接口承诺。「myworkflow-integration-verify」将据此验证我的产出。
 > 声明时间: {ISO 8601 时间戳}
 
 ## 我将创建/修改的文件
@@ -229,7 +232,7 @@ description: Use when 你被主智能体创建为 L2 子智能体（prompt 含 t
 - [x] {异常路径}
 ```
 
-自检规则：必须全部 [x] 才能进入阶段5；修正涉及接口 → 先回阶段2更新声明；不造假（「myworkflow:integration-verify」会对比）。
+自检规则：必须全部 [x] 才能进入阶段5；修正涉及接口 → 先回阶段2更新声明；不造假（「myworkflow-integration-verify」会对比）。
 
 ### 阶段5：完成报告
 

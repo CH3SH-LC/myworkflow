@@ -4,21 +4,21 @@ description: Use when 子智能体完成产出后需要验证接口合规性
 ---
 ## 触发
 
-- **显式触发**：用户/主智能体说"验证集成/检查接口/集成检查/验证子任务/检查模块接口"；L3 经「myworkflow:task-dispatch」下 mission 后检测到所有交付物 owner 的 completion.md 就绪（L2 平铺子交付物同理）。
+- **显式触发**：用户/leader（或派发方）说"验证集成/检查接口/集成检查/验证子任务/检查模块接口"；L3 经「myworkflow-task-dispatch」下 mission 后检测到所有交付物 owner 的 completion.md 就绪（L2 平铺子交付物同理）。
 - **隐式触发**（满足任意一条）：
   - **整批触发**：`.task-manifest/task-contract.yaml` 中列出的**所有** task-id 的 `completion.md` 均已生成
   - **批次触发**：某一并行批次（如同一 `depends_on` 层级）的**全部** task-id 的 `completion.md` 均已生成 → 可先验证该批次，不等全部完成
   - **超时触发**：自派发后超过 **30 分钟**仍有交付物执行者（L2 子智能体 / L3 member）未提交 completion.md → 触发本 skill 的缺失处理流程
-- **不触发**：交付物执行者仍在运行（completion.md 未全部生成且未超时）；task-contract.yaml 不存在（先完成拆解）；用户只是想看某个交付物的产出（直接读文件）；只有 1 个交付物（L1 主智能体直接检查）。
+- **不触发**：交付物执行者仍在运行（completion.md 未全部生成且未超时）；task-contract.yaml 不存在（先完成拆解）；用户只是想看某个交付物的产出（直接读文件）；只有 1 个交付物（L1 当前智能体直接检查）。
 - **模式**：批次验证 = 同一并行层全完成即可验证该批次（跑该批次各任务的自动层 1–4.5）并继续派发下一批；全体验证 = 所有批次完成走完整验证（自动层 1–4.5 + 判断层 5–7.5，含跨模块兼容性与全分支最终代码审查）；增量验证 = 修正循环中某任务重新提交，只对该任务重跑自动层 1–4.5，不走完整判断层。
-- **组织口径（三级模型）**：跨交付物兼容验证按**交付物/owner** 组织——一个 owner 的产物一个归口；L1 单智能体完成自己的交付物后直接自检，L2 子智能体各自交回自己的小件、由主智能体统一核，L3 各 member 在自己域内闭环、leader 只做裁决。**禁止把同一交付物按「先实现→再验证→再审查」拆阶段接力**（阶段在交付物内部，不跨窗口）。
+- **组织口径（三级模型）**：跨交付物兼容验证按**交付物/owner** 组织——一个 owner 的产物一个归口；L1 单智能体完成自己的交付物后直接自检，L2 子智能体各自交回自己的小件、由 leader / 派发方统一核，L3 各 member 在自己域内闭环、leader 只做裁决。**禁止把同一交付物按「先实现→再验证→再审查」拆阶段接力**（阶段在交付物内部，不跨窗口）。
 
 ## 前置强制步骤
 
 核心原则：验证可自动化——能自动检查的不依赖人工判断。重试有上限——修正最多 3 轮，之后升级为人工介入。
 
 1. **读取合约**：读 `.task-manifest/task-contract.yaml`，加载所有任务的接口定义。
-   - 合约文件不存在 → 区分两种场景：`.task-manifest/` 目录也不存在 = "合约从未创建"，提示用户先运行「myworkflow:task-dispatch」拆解任务；目录存在但 task-contract.yaml 缺失 = "合约被删除"，尝试恢复：检查 git 历史（`git log -- .task-manifest/task-contract.yaml`）或询问用户是否重新拆解。
+   - 合约文件不存在 → 区分两种场景：`.task-manifest/` 目录也不存在 = "合约从未创建"，提示用户先运行「myworkflow-task-dispatch」拆解任务；目录存在但 task-contract.yaml 缺失 = "合约被删除"，尝试恢复：检查 git 历史（`git log -- .task-manifest/task-contract.yaml`）或询问用户是否重新拆解。
 2. **收集元文件**：对每个 task-id，检查 `.task-manifest/outputs/{task-id}/interface-declaration.md`、`self-check.md`、`completion.md` 是否存在且非空。缺失或为空 → 标记"未完成"或"交付物执行者可能崩溃"（L2 子智能体 / L3 member）。
 3. **确认依赖已满足**：对每个子任务，检查其 depends_on 中列出的任务是否已完成，**同时验证引用的 task-id 在合约中确实存在**。未满足 → 标记"依赖未就绪"；task-id 不存在 → 标记"合约引用错误"。
 
@@ -26,7 +26,7 @@ description: Use when 子智能体完成产出后需要验证接口合规性
 - self-check.md 存在且全部 [x] → 执行者可能忘了写 completion.md，提示补写。
 - completion.md 存在但为空 → 执行者异常中断（崩溃或提前退出），视同缺失处理：检查 self-check.md 状态，决定补写还是重新派发。
 - self-check.md 也不存在或未完成 → 执行者可能崩溃或超时。向用户报告该交付物状态，询问：重新派发 / 跳过该任务 / 人工完成。
-- 执行者仍在运行（Agent 或团队工具状态判断）→ **不在本回合内等待/轮询**：记录状态并结束回合，等二次唤醒后再查；超时阈值（建议 10 分钟）只用于判定是否按崩溃处理，不作为同步等待依据。
+- 执行者仍在运行（Agent 或团队工具状态判断）→ **不在本回合内等待/轮询**：记录状态并结束回合，等二次唤醒后再查；**判定阈值 = 10 分钟无状态更新**（只看状态判定，不作为等待/同步依据；≥30 秒的命令一律后台或派 leaf）。
 
 **状态路由**（解析 completion.md 的 `**状态**:` 字段）：
 - DONE → 正常进入自动验证层
@@ -34,7 +34,7 @@ description: Use when 子智能体完成产出后需要验证接口合规性
 - NEEDS_CONTEXT → 暂停该任务验证，向用户展示缺失信息列表，询问补充后重新派发
 - BLOCKED → 暂停该任务验证，报告阻塞原因，询问是否解除阻塞或跳过该任务
 
-**关联Skill**：输入 ←「myworkflow:task-dispatch」产出的 task-contract.yaml 作为验证基准；输入 ←「myworkflow:subagent-protocol」产出的 interface-declaration.md 和 self-check.md 作为验证对象。
+**关联Skill**：输入 ←「myworkflow-task-dispatch」产出的 task-contract.yaml 作为验证基准；输入 ←「myworkflow-subagent-protocol」产出的 interface-declaration.md 和 self-check.md 作为验证对象。
 
 ## 执行流程
 
@@ -98,7 +98,7 @@ git branch --list main master
 
 > 边界情况：若本次工作直接发生在 base 分支上（没有独立特性分支），`git merge-base main HEAD` 就等于 `HEAD`，三点 diff 为空。此时改用「本次工作起点」到 HEAD 的两点 diff，例如 `git diff {起始commit}..HEAD`（起点可用 `git log --oneline` 定位）。
 
-拿到 diff 后派发 fresh 审查执行者（L2 子智能体；L3 由 leader 裁决或独立审计），审查维度：跨模块一致性（命名不一致、数据格式冲突、隐式约定被破坏）、全局模式（重复逻辑、错误处理不统一）、盲点（所有 per-task 审查遗漏的问题）。输出 🔴 阻断 / 🟠 重要 / 🟡 建议。优化：如果只有 1 个交付物 → 合并到 per-task 审查。处理：🔴 → 回修复阶段；🟠+🟡 → 记录，用户判定。
+拿到 diff 后派发 fresh 审查执行者（L2 子智能体；L3 由 leader 裁决或独立审计）。**审查是本次验证动作的内部检查步骤，不是独立交付物**——不得把被验交付物的「实现 → 验证 → 审查」拆给不同窗口接力，同一验证任务由当前 owner 一次做完。审查维度：跨模块一致性（命名不一致、数据格式冲突、隐式约定被破坏）、全局模式（重复逻辑、错误处理不统一）、盲点（所有 per-task 审查遗漏的问题）。输出 🔴 阻断 / 🟠 重要 / 🟡 建议。优化：如果只有 1 个交付物 → 合并到 per-task 审查。处理：🔴 → 回修复阶段；🟠+🟡 → 记录，用户判定。
 
 **审查独立性原则**：
 - 禁止在审查 prompt 中预判：❌ "这个模块应该没问题"（诱导降低标准）；❌ "忽略 X 方面的检查"（除非注明理由）；❌ 预先降级预期发现。
@@ -130,7 +130,7 @@ git branch --list main master
 - ⚠️ 执行者标注 [合约异议] → 暂停修正循环，审视合约。合约确实有误 → 修复合约 → 重新派发所有受影响任务；合约无误 → 继续修正
 - ❌ 仍有不合规 → 轮次+1
 - ❌ 第 3 轮后仍不通过 → 标记 REQUIRES_MANUAL_INTERVENTION，建议审视合约
-- ❌ 如果 >50% 任务标记 REQUIRES_MANUAL_INTERVENTION → 建议重新审视整个合约——可能是拆解粒度或接口定义存在系统性问题，考虑重新运行「myworkflow:task-dispatch」
+- ❌ 如果 >50% 任务标记 REQUIRES_MANUAL_INTERVENTION → 建议重新审视整个合约——可能是拆解粒度或接口定义存在系统性问题，考虑重新运行「myworkflow-task-dispatch」
 
 ### 生成验证报告
 
@@ -217,13 +217,13 @@ git branch --list main master
 - [ ] 验证报告已生成
 - [ ] 需人工介入的项目已向用户报告
 
-### 证据口径映射（与 `myworkflow:subagent-protocol` 一致，不重复其长段）
+### 证据口径映射（与 `myworkflow-subagent-protocol` 一致，不重复其长段）
 - **produced（回执）**：验证报告与修正记录已产出（路径 + 结论摘要）；只有报告路径不算完成。
 - **verified（可复核证据）**：自动层每项检查都有真实命令 + exit code + 关键输出；有产物 sha256/runId 时一并写入报告。
 - **accepted（owner 验收）**：判断层全过且报告落盘（`.task-manifest/verification-report.md`）才算通过；超时、无输出、非空文件都不算完成。
 - 修正轮次只是过程，不等于 accepted；轮次上限（≤3）用完仍不通过 → 标记需人工介入。
 
-### 协作语义与等待纪律（2.2）
+### 协作语义与等待纪律（硬规则）
 - **L3 只用于大型、长程任务**：把一个超大任务切成若干**相互独立**的部分，模仿真人团队「各自独立工作 → 沟通 → 整合」；**每个 member ≈ 一个 L2**（端到端做完自己那份再整合）。不要因为“任务大”就建团——要因为“需要持续负责人与并行独立交付”才建团。
 - **member 之间可直接沟通**：任务切分不可能一开始就完美，执行中会出现交叉、重叠、接口变化；member 之间直接协商比“上报 leader 再转发”高效。leader 只在边界冲突需裁决、目标变更、验收标准修改时介入；改了交付边界同步 leader（记录在案），不必阻塞等批准。
 - **member ≠ leaf**：leaf 寿命绑定单个任务、只与派发者沟通、任务完成即结束；member 长期存在（睡眠/随时唤醒复用），管一个领域、可跨任务复用、可直接与其它 member/leader 沟通。

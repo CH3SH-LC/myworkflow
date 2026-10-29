@@ -8,11 +8,11 @@ description: Use when 需要在一个文件夹上建立项目文档体系的场�
 
 - **必须触发**：用户要求初始化项目 / 建立文档体系 / 创建 CLAUDE.md / 搭建项目骨架；进入一个没有 CLAUDE.md 的文件夹并准备长期开发。
 - **隐式触发**：CLAUDE.md 不存在，但扫描发现 ≥5 个源文件分布在 ≥2 个目录，且用户本轮明确要在该处持续开发 → 主动建议初始化，不默默等待。
-- **不触发**：已有 CLAUDE.md 与 `docs/` 体系（走「myworkflow:project-maintain」）、单文件脚本、临时小工具、只读浏览、纯问答。
+- **不触发**：已有 CLAUDE.md 与 `docs/` 体系（走「myworkflow-project-maintain」）、单文件脚本、临时小工具、只读浏览、纯问答。
 
 ## 目标
 一次把文档体系建对。目标不是"生成几个文件"，而是让后续每个智能体都能**按问题查表定位**，不必判断"这条内容该写哪"。
-**8 个位置各回答一个问题**（心智模型，后续所有写文档动作都靠它定位）：
+**8 个位置各回答一个问题**（心智模型，后续所有写文档动作都靠它定位）= `docs/` 六份（`GOAL.md`、`design/`、`PROGRESS.md`、`STATE.md`、`information/`、`research/`）+ 根目录 `CLAUDE.md`、`STRUCTURE.md`；`docs/other/` 只是兜底目录，不计入。
 
 | 文件 / 目录 | 回答 | 谁可写 |
 |------|------|--------|
@@ -23,7 +23,7 @@ description: Use when 需要在一个文件夹上建立项目文档体系的场�
 | `docs/PROGRESS.md` | **做了什么**（追加式） | agent |
 | `docs/STATE.md` | **现在在哪**（刷新式） | agent |
 | `docs/information/` | **学到了什么**（经验条目） | agent |
-| `docs/research/` | **外部世界怎么说** | deep-research |
+| `docs/research/` | **外部世界怎么说** | `myworkflow-deep-research` |
 
 > `docs/` 是项目开发过程的文档区，不是文件收容所。旧体系的 `PROGRESS-LITE.md` 在新体系中**取消**，职能由 `docs/PROGRESS.md` 的条目区继承。
 
@@ -40,7 +40,7 @@ description: Use when 需要在一个文件夹上建立项目文档体系的场�
                      ─[项目]→ 阶段2 收集信息+确认 GOAL → 阶段3 生成文件 → 阶段4 两个 index.json → 阶段5 验证与报告
 ```
 ### 阶段 0：判定「项目文件夹 vs 常规文件夹」（任何 Write 之前）
-> **硬门禁**：进行任何 Write / Edit 之前，必须先 AskUserQuestion 让用户三选一。禁止先建目录再问，禁止用扫描结果代替用户表态。
+> **硬门禁**：进行任何 Write / Edit 之前，必须先 ask_user_question 让用户三选一。禁止先建目录再问，禁止用扫描结果代替用户表态。
 
 三选项：**项目文件夹** / **常规文件夹** / **拿不准**。选「项目」→ 阶段 2；选「常规」→ 阶段 1；选「拿不准」→ 用下表客观判定：
 
@@ -79,7 +79,7 @@ description: Use when 需要在一个文件夹上建立项目文档体系的场�
 ```markdown
 # [项目名称] 工作区指令
 ## 每次工作的强制步骤
-**每次新会话开始时，先调用「myworkflow:project-maintain」skill。** 它引导你：
+**每次新会话开始时，先调用「myworkflow-project-maintain」skill。** 它引导你：
 1. 读本文件（规则）→ 2. 读 `docs/STATE.md`（现在在哪）→ 3. 读 `docs/PROGRESS.md` 条目区（最近做了什么）
 4. 读 `docs/GOAL.md` 与 `docs/design/index.json`（要做什么、做到哪）→ 5. 工作完成后回到该 skill 的完成时流程，强制同步文档
 > 不要跳过。文档体系的价值取决于每一次工作都留下记录。
@@ -141,7 +141,7 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 
 ```markdown
 # [项目名称] 开发进度
-> **版本：0.1.0**（本行为版本号单一权威源，其他文件只能引用它）
+> **版本：0.0.0**（初始值，按 3.4 定稿：空体系 `0.0.0` / 已有可运行产物 `0.1.0` / 有代码清单 `version` 以清单为准；无清单时本行为权威源，有清单时本行只引用清单；下方 v0.1.0 为首个功能版本示例）
 > 双层结构：**条目区**（做了什么，最新在最上，每条一行，带版本号）+ **版本记录区**（每版本一段：问题/根因/修改/验证）
 > 版本号是两层的 join key。归档：条目区触顶后最老内容移入 `docs/other/progress-archive-YYYY.md`。
 ---
@@ -155,20 +155,20 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 **问题 / 动机**：（背景与意图）
 **根因**：（仅 bug 修复需要：为什么发生、为什么之前没发现、为什么这样修）
 **修改**：`路径/文件` — 改了什么；对应 design 点号 `design-01-P1`
-**验证**：（真实跑到的命令与结果，不写"已测试"）
+**验证**：命令 + exitCode/退出码（或产物路径 / sha256），不写"已测试"
 ```
 
 标签：`[New Feature]` 新增 / `[Debug]` 修复 / `[Change]` 重构优化 / `[Build]` 构建部署；同日多条按此顺序排。
 
 **版本号 a.b.c**（初始值：空体系 `0.0.0`；已有可运行产物 `0.1.0`；有 `package.json` 等代码清单的 `version` 时以代码清单为准）：
 
-| 位 | 语义 | 递增条件 | 谁批准 |
+| 位 | 语义 | 递增条件 | 谁决定 |
 |----|------|---------|--------|
-| a | 大版本 | `0` = 未成熟测试期；正式发布 0→1；此后仅完整项目的大变动 | **用户** |
-| b | 小版本 | 新增功能 / 功能增强 / 新增模块 | agent 自动 |
-| c | debug | 修 bug、重构、性能微调、文档配置调整 | agent 自动 |
+| a | 大版本 | 项目版本策略定义（如正式发布 0→1、大变动）；无策略时仅用户明确要求 | **用户 / 项目策略** |
+| b | 小版本 | 项目版本策略定义（如新增功能 / 模块）；无策略时不递增 | **用户 / 项目策略** |
+| c | debug | 项目版本策略定义（如修 bug、重构、文档调整）；无策略时不递增 | **用户 / 项目策略** |
 
-> 一次会话至多递增一次（取最高语义）；不产生版本的工作不递增；与代码清单 `version` 不一致时，在版本记录区显式记一行并在 `STATE.md` 列出——递增与写入的权威执行方是「myworkflow:project-maintain」。
+> 版本号属于用户 / 项目策略，智能体**不擅自递增**：单次改动默认不改版本号，一次改动至多一次（取最高语义）；不产生版本的工作不递增。权威源可判定：有代码清单 `version` → 以代码清单为准，`docs/PROGRESS.md` 头部只引用清单，两者不一致时必须在版本记录区显式记一行并在 `STATE.md` 列出差异；无代码清单 → `docs/PROGRESS.md` 头部为权威源，其他文件只引用它。递增与写入的权威执行方是「myworkflow-project-maintain」。
 
 **3.5 `<root>/docs/STATE.md`**（刷新式）
 
@@ -230,14 +230,14 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 
 **3.8 `<root>/docs/research/`、`<root>/docs/other/`**
 
-- `research/`：由 `deep-research` 落盘，**不建 index.json**，靠日期 + slug 文件名检索；允许按调研要点建子文件夹。
+- `research/`：由 `myworkflow-deep-research` 落盘，**不建 index.json**；目录结构以它正文为准（`<主题-slug>/00-总览.md` + `NN-<要点>.md`，大要点可升子目录），本技能不重复定义。
 - `other/`：兜底，**严格准入**——只有确实不属于上述任何一类、且**确实是本次开发产生的**文档才放这里；准入提问仍是那一句「这份文档是这次开发中写出来的吗？不是 → 原地不动」。归档文件命名为 `progress-archive-YYYY.md`。
 
 ### 阶段 4：两个 index.json（schema 与示例）
 
-> **写入权**：`index.json` 只由「myworkflow:project-maintain」写入。本阶段只负责建出初始文件，后续任何状态变更都不得由其他技能直接改。
+> **写入权**：`index.json` 只由「myworkflow-project-maintain」写入。本阶段只负责建出初始文件，后续任何状态变更都不得由其他技能直接改。
 
-**`docs/design/index.json`** 字段：根级 `schema_version`（固定 1）/ `project` / `updated` / `status_enum`（固定四态）；`designs[]` 每项含 `id`（与文件名前缀一致）、`file`（相对 `docs/design/` 的文件名，必须能在磁盘定位）、`title`、`created`、`updated`、`goal_check`（GOAL 回望那一行的原文）；`points[]` 每项含 `id`（如 `design-01-P1`，全局唯一）、`design`、`file`（必须等于其 `designs[].file`）、`title`、`status`（四态枚举之一）、`evidence`（可指认的证据：验证输出、命令与结果、截图路径）、`updated`、`note`（如"历史文档补登记"）。
+**`docs/design/index.json`** 字段：根级 `schema_version`（固定 1）/ `project` / `updated` / `status_enum`（固定四态）；`designs[]` 每项含 `id`（与文件名前缀一致）、`file`（相对 `docs/design/` 的文件名，必须能在磁盘定位）、`title`、`created`、`updated`、`goal_check`（GOAL 回望那一行的原文）；`points[]` 每项含 `id`（如 `design-01-P1`，全局唯一）、`design`、`file`（必须等于其 `designs[].file`）、`title`、`status`（四态枚举之一）、`evidence`（可指认的证据：命令 + exitCode/退出码，或产物路径 / sha256；截图路径须可定位）、`updated`、`note`（如"历史文档补登记"）。
 
 ```json
 {
@@ -247,7 +247,7 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
     { "id": "design-01", "file": "design-01-用户登录.md", "title": "用户登录", "created": "2026-09-15", "updated": "2026-09-15", "goal_check": "GOAL 回望：本 design 与 GOAL 的「登录流程可用」一致" }
   ],
   "points": [
-    { "id": "design-01-P1", "design": "design-01", "file": "design-01-用户登录.md", "title": "支持手机号 + 验证码登录", "status": "待验收", "evidence": "pnpm vitest run tests/login.test.ts → 8 passed；手工走通验证码登录进入首页", "updated": "2026-09-15", "note": "" },
+    { "id": "design-01-P1", "design": "design-01", "file": "design-01-用户登录.md", "title": "支持手机号 + 验证码登录", "status": "待验收", "evidence": "pnpm vitest run tests/login.test.ts → exit 0（8 passed）；手工走通验证码登录进入首页", "updated": "2026-09-15", "note": "" },
     { "id": "design-01-P2", "design": "design-01", "file": "design-01-用户登录.md", "title": "记住登录状态 7 天", "status": "未开发", "evidence": "", "updated": "2026-09-15", "note": "" }
   ]
 }
@@ -264,11 +264,11 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 }
 ```
 
-**状态机四条硬门禁**（建库即生效，后续由 project-maintain 执行）：
+**状态机四条硬门禁**（建库即生效，后续由 `myworkflow-project-maintain` 执行）：
 
 > 未开发 / 阻塞 / 待验收 / 完成 四态封闭枚举，**"开发中"不写进 index**——它由 `docs/STATE.md` 承载。
 
-> `evidence` 为空的点不得置「待验收」。必须有可指认的证据（验证输出、命令与结果、截图路径），不接受"已测试"这类无证据表述。
+> `evidence` 为空的点不得置「待验收」。必须有可指认的证据（命令 + exitCode/退出码，或产物路径 / sha256；截图路径须可定位），不接受"已测试"这类无证据表述。
 
 > 除非用户在本轮对话中明确说出"确认没问题 / 可以了 / 通过了 / 我验收通过"，否则状态只能停留在「待验收」。禁止以"我已经验证过""测试全绿"为由自行置为「完成」。**用户没说话 = 还没验收。**
 
@@ -286,7 +286,7 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 ```
 
 ```
-📋 文档体系初始化完成：✓ CLAUDE.md（已写入对「myworkflow:project-maintain」的强制引用）✓ STRUCTURE.md（[N] 个目录）✓ docs/GOAL.md（用户已确认）✓ docs/PROGRESS.md（双层）✓ docs/STATE.md（刷新式）✓ 两个 index.json（可解析）
+📋 文档体系初始化完成：✓ CLAUDE.md（已写入对「myworkflow-project-maintain」的强制引用）✓ STRUCTURE.md（[N] 个目录）✓ docs/GOAL.md（用户已确认）✓ docs/PROGRESS.md（双层）✓ docs/STATE.md（刷新式）✓ 两个 index.json（可解析）
 ```
 
 ## 产出物
@@ -296,7 +296,7 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 
 ## 完成标志
 
-- [ ] 已 AskUserQuestion 完成三选一（选"拿不准"时按信号表判定；两组都 ≥2 时已回到用户，未代选）
+- [ ] 已 ask_user_question 完成三选一（选"拿不准"时按信号表判定；两组都 ≥2 时已回到用户，未代选）
 - [ ] 常规文件夹：未创建 `docs/`，未改动既有内容，仅新增 / 追加 CLAUDE.md 三节
 - [ ] 项目文件夹：GOAL 已由用户确认且含可量化判据
 - [ ] 8 个位置的文件全部生成，模板占位符已替换为实际内容
@@ -306,5 +306,6 @@ src/  →  index.ts 入口 ／ components/ UI 组件 ／ utils/ 工具函数
 ## 常见问题
 
 - **用户说不清 GOAL？** 逐条提议让用户选，不替用户写死；宁可留空并标"待用户确认"，也不要编造目标。
-- **文件夹里已有一堆旧文档？** 原地不动；用户明确要求迁移时走「myworkflow:project-maintain」阶段 0（复制 + 归档，逐项确认）。
+- **文件夹里已有一堆旧文档？** 原地不动；用户明确要求迁移时走「myworkflow-project-maintain」阶段 0（复制 + 归档，逐项确认）。
+- **中断/继续怎么接？** 走「myworkflow-project-maintain」的「续接与恢复」：先对账（从磁盘读 STATE / PROGRESS / 交付物与证据），只推进最小下一步；不重新初始化，禁止凭对话记忆假设进度。
 - **半新半旧（有 CLAUDE.md 无 docs/）？** 判为项目文件夹后按阶段 3 补齐；已存在文件先 Read 再定补写还是追加，覆盖超过 20 行前须展示 diff 摘要并获确认。
