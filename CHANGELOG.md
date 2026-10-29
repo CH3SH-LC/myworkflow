@@ -1,33 +1,6 @@
 # Changelog
 
-## v2.3.0 — 2026-10-29
-
-长会话反漂移：每轮「任务纪律」hook（Host 侧 `taskDiscipline` 配置 + 每用户回合 pre-step 注入固定四条文本；不改技能正文）。
-
-### 变更
-- 本地包 `package.json` / `README.md` → **2.3.0**；`verify-tier-model.mjs` 新增 2.3.0 机制断言（每用户回合 1 次且同回合不重复、文本含四要点且 ≤400 字符、`taskDiscipline` 默认值、全角色生效、关闭即 no-op、**不复活 `skillTrigger` 票据/TTL 门禁**）。
-- 仓库 `plugin.json` ×2 版本 → **2.3.0**（description 同步 2.3 口径）；README 当前版本 / 沿革 / 安装示例 / 目录树同步 2.3.0。
-- 15 个 DSH 技能正文、6 个非 DSH 技能、hooks、config、references、`plugin.json.skills` 数组均无改动（技能内容冻结在 2.2.1 状态；契约 §2 本轮不改正文）。
-
-### 验证
-- `node src/selfcheck.js`：PASS；`node .migration/verify-tier-model.mjs --all`：PASS（含 `host:task-discipline` 硬断言）；`node --test tests/*.test.mjs`：7/7 PASS。
-- 相对 v2.2.1（`2746ef9`）差异仅 `plugin.json`、`.claude-plugin/plugin.json`、`CHANGELOG.md`、`README.md` 四个文件。
-- `v2.3.0` annotated tag + 正式 release（releases = **13**）；v2.2.0 / v2.2.1 与全部历史 tag 不动。
-
-## v2.2.1 — 2026-10-29
-
-补丁：收口 2.2.0 遗留的插件清单陈旧元数据（不涉及技能内容变更）。
-
-### 变更
-- 仓库根 `plugin.json` 的 `skills` 数组由 24 项清为 **21 项**：移除 3 个已下线技能的 dangling 路径（`skills/write-prose`、`skills/polish-prose`、`skills/anti-sycophancy`），保留现存 15 个 DSH + 6 个非 DSH 技能路径；与仓库实际 `skills/` 目录一一对应。
-- `plugin.json` / `.claude-plugin/plugin.json` 版本 → **2.2.1**；README 当前版本与安装示例同步 2.2.1。
-- 15 个 DSH 技能正文与 6 个非 DSH 技能、hooks、config、references 均无改动（v2.2.0 内容零回退）；仅插件清单与版本元数据更新。
-
-### 验证
-- `plugin.json.skills` = 21，全部路径在仓库 `skills/` 下存在，dangling=0；仓库 `skills/` 目录 = 21（15 DSH + 6 非 DSH）。
-- 相对 v2.2.0（5856dbf）差异仅 `plugin.json`、`.claude-plugin/plugin.json`、`CHANGELOG.md`、`README.md` 四个文件。
-
-## v2.2.0 — 2026-10-29
+## v2.2.0 — 2026-10-29（归并版）
 
 协作模型语义修正 + 等待纪律 + 技能精简：修正 L2/L3 定义与 member/leaf 区别，新增「禁止在自己回合内等待」与 30 秒后台纪律，删除 3 个技能（组件 18→15，仓库技能目录 24→21）。
 
@@ -42,6 +15,15 @@
 - `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs --all` PASS（15 技能、语义断言、等待纪律断言）；registry skills=15、errors=[]。
 - 15 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（LF 归一）；活跃文件对 write-prose / polish-prose / anti-sycophancy 零残留（历史记录与 2.2 之前的 CHANGELOG 条目除外）。
 
+### 补充（归并：原 2.2 之后的增量内容全部归入 2.2.0）
+- **每轮任务纪律 hook（长会话反漂移）**：Host 侧 `team-workbench` 新增 `taskDiscipline` 配置 + 每用户回合 pre-step 注入固定四条文本（170 字符：先想用哪套 skills / 先弄清用户要什么 / 严格按用户指令执行 / 输出只说有价值的）；每用户回合只注入 1 次（同回合后续 step 不重复）；`enabled` 默认 true、`maxChars` 默认 400、`cooldownUserTurns` 默认 0；关闭即 no-op；全角色生效；**不做阻塞门禁、不复活 10 月 skillTrigger 票据/TTL 机制**。
+- **续接与恢复协议**：`task-router` / `subagent-protocol` / `agent-dev-loop` / `project-maintain` 四载体写入「先对账（从磁盘事实重建进度，禁止凭对话记忆）/ 三级状态（accepted 不重做、produced 先补验证、只推进最小下一步）/ 续接同样先判级并加载技能 / 失败不重复 / 压缩重启后从磁盘事实恢复 / 交接四样（已做 / 未做 / 证据（runId 或产物路径）/ 下一步 + 未解决项）」。
+- **仓库插件清单清理**：`plugin.json` 的 `skills` 数组 24→21（移除 3 个已下线技能的 dangling 路径），与仓库 `skills/` 目录一一对应；`plugin.json` ×2 版本统一 2.2.0。
+- **版本号纪律修正**：用户已否决连续升版（不再产生补丁号或新版本号）；所有后续内容全部归入 2.2.0，仓库仅保留 `v2.2.0`（及更早历史版本）。
+
+### 验证（归并后）
+- `node src/selfcheck.js` PASS；`node .migration/verify-tier-model.mjs --all` PASS（15 技能 / 语义与等待纪律断言 / `host:task-discipline` 硬断言 / 防复活断言）；`node --test tests/*.test.mjs` 7/7 PASS。
+- 15 个仓库 `SKILL.md` 正文与组件 `fullBody` 逐字节一致（UTF-8 无 BOM、LF）；仓库文本中 2.2 之后的补丁/新版本号字样 0 残留。
 ## v2.1.1 — 2026-10-28
 
 体检整改：修复五路体检（A–E）确认的 F1–F17 问题；不夹带新功能，不改历史 tag 与提交历史。
